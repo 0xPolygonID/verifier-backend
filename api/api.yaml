@@ -41,6 +41,8 @@ paths:
     post:
       summary: Sign in
       operationId: Sign in
+      description: |
+        Sign in with a verification request
       tags:
         - Verifier
       requestBody:
@@ -286,33 +288,30 @@ components:
     Query:
       type: object
       example:
-        '{
-           "network": "mumbai",
-           "circuitID": "credentialAtomicQuerySigV2",
-           "skipClaimRevocationCheck": false, 
-           "query": {
+        {
              "context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
              "allowedIssuers": ["*"],
              "type": "KYCAgeCredential",
              "credentialSubject": {
                  "birthday": {
-                     "$eq": 19960424
+                     "lt": 20200424
                  }
              }
            }
-         }'
 
     SignInRequest:
       type: object
       required:
         - chainID
         - circuitID
-#        - requestID
         - query
       properties:
         chainID:
           type: string
-          example: '137'
+          description: |
+            `80001`: `mumbai`
+            `137` : `mainnet`
+          example: '80001'
         circuitID:
           type: string
           example: 'credentialAtomicQuerySigV2'

@@ -60,6 +60,8 @@ type Scope struct {
 
 // SignInRequest defines model for SignInRequest.
 type SignInRequest struct {
+	// ChainID `80001`: `mumbai`
+	// `137` : `mainnet`
 	ChainID   string  `json:"chainID"`
 	CircuitID string  `json:"circuitID"`
 	Query     Query   `json:"query"`
