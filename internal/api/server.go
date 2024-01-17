@@ -26,9 +26,9 @@ import (
 const (
 	randomSeed           = 1000000
 	stateTransitionDelay = time.Minute * 5
-	StatusPending        = "pending"
-	StatusSuccess        = "success"
-	StatusError          = "error"
+	statusPending        = "pending"
+	statusSuccess        = "success"
+	statusError          = "error"
 )
 
 // Server represents the API server
@@ -319,18 +319,18 @@ func (s *Server) Status(_ context.Context, request StatusRequestObject) (StatusR
 		}, nil
 	}
 
-	switch item.(type) {
+	switch value := item.(type) {
 	case protocol.AuthorizationRequestMessage:
 		return Status200JSONResponse{
-			Status: StatusPending,
+			Status: statusPending,
 		}, nil
 	case error:
 		return Status200JSONResponse{
-			Status:  StatusError,
-			Message: common.ToPointer(item.(error).Error()),
+			Status:  statusError,
+			Message: common.ToPointer(value.Error()),
 		}, nil
 	case string:
-		b, err := json.Marshal(item)
+		b, err := json.Marshal(value)
 		if err != nil {
 			log.Println(err.Error())
 			return Status500JSONResponse{
@@ -351,7 +351,7 @@ func (s *Server) Status(_ context.Context, request StatusRequestObject) (StatusR
 			}, nil
 		}
 		return Status200JSONResponse{
-			Status: StatusSuccess,
+			Status: statusSuccess,
 			Jwz:    common.ToPointer(m),
 		}, nil
 	}
