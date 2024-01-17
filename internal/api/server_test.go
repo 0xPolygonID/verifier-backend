@@ -3,11 +3,10 @@ package api
 import (
 	"context"
 	"net/http"
-	"strconv"
 	"strings"
 	"testing"
 
-	"github.com/gofrs/uuid/v5"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -695,7 +694,7 @@ func isValidaQrStoreCallback(t *testing.T, url string) bool {
 		return false
 	}
 
-	_, err := uuid.FromString(queryItems[1])
+	_, err := uuid.Parse(queryItems[1])
 	require.NoError(t, err)
 	return true
 }
@@ -714,8 +713,8 @@ func isValidCallBack(t *testing.T, url string) bool {
 	if len(queryItems) != 2 {
 		return false
 	}
-	n, err := strconv.Atoi(queryItems[1])
+
+	_, err := uuid.Parse(queryItems[1])
 	require.NoError(t, err)
-	assert.True(t, n > 0)
 	return true
 }

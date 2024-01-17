@@ -168,7 +168,7 @@ components:
        "type":"https://iden3-communication.io/authorization/1.0/request",
        "thid":"6dc645a6-2be3-4099-a645-20784ee53cd0",
        "body":{
-          "callbackUrl":"https://verifier-backend/callback?sessionId=469345",
+          "callbackUrl":"https://verifier-backend/callback?sessionId=6dc645a6-2be3-4099-a645-20784ee53cd0",
           "reason":"test flow",
           "scope":[
              {
@@ -197,10 +197,22 @@ components:
     StatusResponse:
       type: object
       required:
-        - jwz
+        - status
       properties:
+        status:
+          type: string
+          example: 'pending'
+          description: |
+            pending, success, error
+        message:
+          type: string
+          example: 'error message'
+          x-omitempty: false
+          description: |
+            error message
         jwz:
           type : string
+          x-omitempty: false
           example:
             'eyJhbGciOiJncm90aDE2IiwiY2lyY3VpdElkIjoiYXV0aFYyIiwiY3JpdCI6WyJjaXJjdWl0SWQiXSwidHlwIjoiYXBwbGljYXRpb24vaWRlbjMtemtwLWpzb24ifQ.eyJpZCI6IjBlM2Y1YWEwLTZkN2EtNDE5OS1hNDBkLTg2MTU0MTE0MGMxZiIsInR5cCI6ImFwcGxpY2F0aW9uL2lkZW4zLXprcC1qc29uIiwidHlwZSI6Imh0dHBzOi8vaWRlbjMtY29tbXVuaWNhdGlvbi5pby9hdXRob3JpemF0aW9uLzEuMC9yZXNwb25zZSIsInRoaWQiOiJiMzI4YzMzOS0zZWQyLTQzMTItYTg1YS04YmIyMzhmYTk4MDkiLCJib2R5Ijp7ImRpZF9kb2MiOnsiY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvbnMvZGlkL3YxIl0sImlkIjoiZGlkOnBvbHlnb25pZDpwb2x5Z29uOm11bWJhaToycUYxYnBLWjhSMk1WVnE5R3dRUkI1NEoxcVNabmVTR0d6bThHaEZrNkciLCJzZXJ2aWNlIjpbeyJpZCI6ImRpZDpwb2x5Z29uaWQ6cG9seWdvbjptdW1iYWk6MnFGMWJwS1o4UjJNVlZxOUd3UVJCNTRKMXFTWm5lU0dHem04R2hGazZHI3B1c2giLCJ0eXBlIjoicHVzaC1ub3RpZmljYXRpb24iLCJzZXJ2aWNlRW5kcG9pbnQiOiJodHRwczovL3B1c2gtc3RhZ2luZy5wb2x5Z29uaWQuY29tL2FwaS92MSIsIm1ldGFkYXRhIjp7ImRldmljZXMiOlt7ImNpcGhlcnRleHQiOiJLd1p3aHNrSFRzY1lrRDVOUE5IVjhXZ1FOMVJ0d3Z6d3czWW5BZ0d0UGNhbHp5S0RYWVVJOVhIOENoYk5kY3c3THhhNFcyNjltSE81WkRsSWZRZ0NhTTc4c0g1ZWRhRGFidkNEeU5ERS83akJuL1JzTnoxR0oyL0tlMm5GQ3Axajk1MGVRdU80MXpFcjVMT0lEajlwQ0xNQVhjY28yOGJybklyRkZJeEo4dS9keEJrbWdiek5DcUZKbnhlYnNVTFZjT055bE5VR1dCNzl6MnhhTXVvVzZCaWlnZkI4UjJGOUF2ZkJSdDEzK1ZqSlFhTHBCejc3S0hTbXd3cVpCZ2xHZ0NkTElxMTZ5c3FmUDJ6MVM4M3lWbWEzdmdiTVdmSGozNkxQaUR1ZVYyOUwxS1ZSRUZFdG91Vk9oYVRlS2Q4Z0RIRGx1RVJXamJiZ1BDcENhNGZMTnZQMWkrYlZZNlBrbUsxQTFvMnl4Y1pRKzh5bkorU2NtK2Vyb3ZUQjgycVlDTnlKd0hVZGRsdVNkZ0NkaWpMWlh3TW5CRjMwalVMR2hWaGxzSlNUZTFiem92bmVqVk0wbXhUUlNHSi9reGFRc0lXVWkwMjJRWmVHeDJJNXpseG1vZitTWWZ3UWs5VnMvREZWMUdSTzh4YnpvQWVlS1U4bGJlZXRoR2d0RFZTWGx0Wjk3b0pwSDR6a25TTTJMWW1yWVBaMUwwMGdMTFhvU0s2SllMZ2U2YWlGSVIyZ2YySW00Q29Qa0FjMGxhUjA2REJYb2FUWEY1M3Q1VlBsNkc1cTlkVm9Ldld6ekY2Y2hua2FJZ0Z1aFQwQStjMHNtaHplcSs3UFUxOTBxMEt4Wmo5YmtQUUYwNENwQUlTZzFPQVVudEVtQ0NGaWt4UWF3NHh0djJmbzRxWT0iLCJhbGciOiJSU0EtT0FFUC01MTIifV19fV19LCJtZXNzYWdlIjpudWxsLCJzY29wZSI6W3sicHJvb2YiOnsicGlfYSI6WyIxMjkxNjg4NzE0MDg1NDQ1Nzg5MjY0NzYyMDUwMjA5MTg1MzUyNzIyMzI4NDUwODY0MzU5NzE3NDI2ODIyMDkwMDQ2MDQ3NDQ3NTE2MSIsIjc4MTU4ODU5NjEwMzc0NTA4MTcxMTQ4NTI3OTg3OTE0Mzc3MjMzMjQ4MTY1NzQzMjkzNjY0NTE3MDU0NzA1NjQzOTgzNTQyMjYyMDQiLCIxIl0sInBpX2IiOltbIjE0NjI1OTM0OTE3ODU1NDg5NjQ3MzI2MDQ2MzA3NTYyODU3OTYxNDI0NzU2MjM3MjUzMDIxMzE3MTM1OTIyODMzODIwNjExMTk0MDQ2IiwiNTAxODc0NTQ2MzAwMjIzODI1OTI0NTU3NDQyNjQzMTE3MDAyMjI1NDc0MjY5NTIzMDM0Mzg5MDE0MzIzMzQxOTA3NjU4NjA4MjAwOCJdLFsiOTc3NzYxMDI5MDcwMDQxNTcxNjQzNzk3MjgwODcwMTg1MzYzMTg2NjA0Mzc4MjU1NDE0MDc5NDAyNTM2MjE1ODU3MjMzMDEyNjQwMSIsIjM0MzIxOTEwMTg1MjExODQwMjExNDQwODQyNTk0MDg4OTQ1NTYyNTA2NzE2NzQ1NjI3NzMyODYwMjUxOTcyNTQ0Nzc4NTkzNzQ0OTgiXSxbIjEiLCIwIl1dLCJwaV9jIjpbIjYwMzkzNDI2MjI2NjYzMzg2NDU1MTI1MTAzNjM3MzU4NDk1NTIxNzg0NTc4NjY2OTExNzQ0MzU5MzczODkzOTkyNDExODkzMDYyNDYiLCIxOTc1MDI0NjU3NDQzNDIxNDYwNjE3NDc4NjE5MTQzMjE5OTA5ODgxNjIxMTg5Mjg1MjMyNjYyNzg1MTk4NzAyMjgwNDQxMzY4OTQ2OSIsIjEiXSwicHJvdG9jb2wiOiJncm90aDE2IiwiY3VydmUiOiJibjEyOCJ9LCJwdWJfc2lnbmFscyI6WyIxIiwiMjQ1MTc1NTUyNzkwMjgzNTMwNTExNzgxNTc0NjAzOTk5MzE5OTQzMzk3NTU4NTY2ODk5ODk2MjMxNTczOTUyODYxNzQyMDg1MTQiLCIxOTUxMDEzMjk5NjcyNTM2NjU5NjQ1NDU2ODc4NDY2MjYwMTU2MjYwOTM1MDMyNzEzMzE2NDgxMDcwNzUzMzg5NDU1Nzc3Njg1NDAxMiIsIjEiLCIyMTE5NjQyNTkyNTU0MDYxMTgzNDA3MjA1MDQyNDI0NTkwNzUyMjM3NzY1Mzg1MjYxMjMzNDgwNzUxNDI0NzE4MDM1NDMyNzA0MiIsIjEiLCIxMDc5MzQ3Njc5NzgzNzgzNjA3MjM5Mjc1ODIxNTQ0MTQ5MzMwNDEzNzkxOTk4NDc5MjI4MTAyMjM0MDg2NDI3ODIyODg1OTg1MjMwNiIsIjE3MDI2MzMzMzciLCIxMDYyMjgxMzg1NzgxNzczNzE1NTY0MTI3MzQ3NDAyNTk0MDUwNzMiLCIwIiwiODI2MjE1ODQ1MTY0NTQ2NjExNjgyNTYwMTg4OTUwMzAxMTkwODYwMTE1NTE3NTI3Mzk2ODY4NjkwMDk2MjI1MTk0MzQ5NjIyNzAzOSIsIjAiLCIxIiwiMSIsIjAiLCIwIiwiMCIsIjAiLCIwIiwiMCIsIjAiLCIwIiwiMCIsIjAiLCIwIiwiMCIsIjAiLCIwIiwiMCIsIjAiLCIwIiwiMCIsIjAiLCIwIiwiMCIsIjAiLCIwIiwiMCIsIjAiLCIwIiwiMCIsIjAiLCIwIiwiMCIsIjAiLCIwIiwiMCIsIjAiLCIwIiwiMCIsIjAiLCIwIiwiMCIsIjAiLCIwIiwiMCIsIjAiLCIwIiwiMCIsIjAiLCIwIiwiMCIsIjAiLCIwIiwiMCIsIjAiLCIwIiwiMCIsIjAiLCIwIiwiMCIsIjAiLCIwIiwiMCIsIjAiLCIwIiwiMCJdLCJpZCI6MSwiY2lyY3VpdElkIjoiY3JlZGVudGlhbEF0b21pY1F1ZXJ5U2lnVjIifV19LCJmcm9tIjoiZGlkOnBvbHlnb25pZDpwb2x5Z29uOm11bWJhaToycUYxYnBLWjhSMk1WVnE5R3dRUkI1NEoxcVNabmVTR0d6bThHaEZrNkciLCJ0byI6ImRpZDpwb2x5Z29uaWQ6cG9seWdvbjptdW1iYWk6MnFIN1RzdHBSUkpIWE5ONG80OUZ1OUgyUWlzbWt1OGhRZVV4RFZyanFUIn0.eyJwcm9vZiI6eyJwaV9hIjpbIjE2MDY2Mzc4ODgyMjA4MTkzMjg3MDkzNzQxMjE3MDUyMjU0NzkxODgwMTg2MzE0MjMxMTU5MDI2MTczMzI5OTkzODczMDk1MTA0NzgwIiwiMTkyOTI4MjgwMzI5MzcyNzczOTk5MDU2OTY4MDAzMzA3NDY3MzAzMTYyOTMyNDU0NzY2NjA2NTk0Mjc1NTU5NzczMjY4OTU1MzI1MTgiLCIxIl0sInBpX2IiOltbIjE2MTE2ODY0NTc2MDg5NDQ5NzY4NDI5MDg5NjE5ODEyODk4NDQ0ODQwMDMwMTE1MjU5NjEwNzE5MTc1Nzc0MTIxNDEyMTM2NTI0OTQ2IiwiNzY4MzYzMzc3MjY2MjY3OTM0NjM3Nzc0NzYxNzU5NDg0MjgzOTM4OTI2MDUzMzcyNDQ4NDQzMTY5MDkzOTM1OTQxMjc5ODI4MTU0Il0sWyIxODY4NzQ3ODU2Mzk4OTQ2NjMzMDUwNjQyMjc3Nzc1MTM4NTY5NTY4MDk4NjMyNjY4NjEwMTY5NjQ5MDY4MDg3NTgzNTIyMTk0NjU0NiIsIjEwMzY1MjMwNDIxOTAxNTI3NDgwMzM0MTUwMTMyMDk5NzI0MTc2NDMxNDg2NTcyNzExMDI4NTQ3MDAyMzQ4NzQ0MTUwNDI4Nzc2OTY4Il0sWyIxIiwiMCJdXSwicGlfYyI6WyIyMTE4NDU4NDU3NTM2NTQ2MDIzMjY0ODc4NTk5Nzg1MzQ1Mjc4Njg5MzEzNDY5MTU3MzI3Nzc4MDI2NzU3NzQ0MDcxMTgyODgzNzYyNSIsIjYzNjY5NjgxOTQ1OTAzNTk3Mjc5ODczMTYxNjU5MTUyMjEzMTU5MTAxNzI2NDM1ODcwMzc4MDc3NzY2MTUyNjk1ODgxMjkyMTUwNjMiLCIxIl0sInByb3RvY29sIjoiZ3JvdGgxNiIsImN1cnZlIjoiYm4xMjgifSwicHViX3NpZ25hbHMiOlsiMjQ1MTc1NTUyNzkwMjgzNTMwNTExNzgxNTc0NjAzOTk5MzE5OTQzMzk3NTU4NTY2ODk5ODk2MjMxNTczOTUyODYxNzQyMDg1MTQiLCIxNjA3MjY1NzAyMjIxODcxMTM3NjYzNTEzNDg3NjkxNzUyODAzOTk3OTA1MjA0NTI4MjIzNDE0MjA4ODMyOTgyNjIxNzUwNDE0MDQzNSIsIjQyMTc4MjI2NjU0MzM4MDcyMjg1MjY0NjU4MTE4MTU3Nzk1OTk3ODczMTc3Mzk1NTYxODc2Nzg1ODkxNjM3ODI4ODkzMjQ2MTU5ODQiXX0'
 
@@ -218,8 +230,7 @@ components:
           - qrCode
       properties:
           sessionID:
-            type: integer
-            example: 121342345
+            $ref: '#/components/schemas/UUID'
           qrCode:
             $ref: '#/components/schemas/QRCode'
 
@@ -254,7 +265,7 @@ components:
           properties:
             callbackUrl:
               type: string
-              example: 'https://verifier-backend/callback?sessionId=469345'
+              example: 'https://verifier-backend/callback?sessionId=6dc645a6-2be3-4099-a645-20784ee53cd0'
             reason:
               type: string
               example: 'test flow'
@@ -294,7 +305,7 @@ components:
              "type": "KYCAgeCredential",
              "credentialSubject": {
                  "birthday": {
-                     "lt": 20200424
+                     "$lt": 20200424
                  }
              }
            }
@@ -317,7 +328,7 @@ components:
           example: 'credentialAtomicQuerySigV2'
         to:
           type: string
-          example: 'did:polygonid:polygon:mumbai:2qEATqfECVbCBzq9EhJpPSiv1xtJRpbMBKDaNM68Ci'
+          example: null
         query:
           $ref : '#/components/schemas/Query'
 
@@ -345,11 +356,13 @@ components:
       in: query
       required: true
       description: |
-        Session ID e.g: 123456
+        ID e.g: 89d298fa-15a6-4a1d-ab13-d1069467eedd
       schema:
         type: string
-
-
+        x-go-type: uuid.UUID
+        x-go-type-import:
+          name: uuid
+          path: github.com/google/uuid
     id:
       name: id
       in: query

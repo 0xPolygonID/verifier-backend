@@ -4,14 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"math/rand"
 	"net/http"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/gofrs/uuid/v5"
+	"github.com/google/uuid"
 	auth "github.com/iden3/go-iden3-auth/v2"
 	"github.com/iden3/go-iden3-auth/v2/loaders"
 	"github.com/iden3/go-iden3-auth/v2/pubsignals"
@@ -20,6 +18,7 @@ import (
 	"github.com/patrickmn/go-cache"
 	log "github.com/sirupsen/logrus"
 
+	"github.com/0xPolygonID/verifier-backend/internal/common"
 	"github.com/0xPolygonID/verifier-backend/internal/config"
 	"github.com/0xPolygonID/verifier-backend/internal/loader"
 )
@@ -27,6 +26,9 @@ import (
 const (
 	randomSeed           = 1000000
 	stateTransitionDelay = time.Minute * 5
+	StatusPending        = "pending"
+	StatusSuccess        = "success"
+	StatusError          = "error"
 )
 
 // Server represents the API server
@@ -72,7 +74,7 @@ func (s *Server) Callback(ctx context.Context, request CallbackRequestObject) (C
 		"token":     request.Body,
 	}).Info("callback")
 
-	authRequest, b := s.cache.Get(sessionID)
+	authRequest, b := s.cache.Get(sessionID.String())
 	if !b {
 		log.WithFields(log.Fields{
 			"sessionID": sessionID,
@@ -100,10 +102,11 @@ func (s *Server) Callback(ctx context.Context, request CallbackRequestObject) (C
 			"sessionID": sessionID,
 			"err":       err,
 		}).Error("failed to verify")
+		s.cache.Set(sessionID.String(), err, cache.DefaultExpiration)
 		return nil, err
 	}
 
-	s.cache.Set(sessionID, *request.Body, cache.DefaultExpiration)
+	s.cache.Set(sessionID.String(), *request.Body, cache.DefaultExpiration)
 
 	return Callback200JSONResponse{}, nil
 }
@@ -135,15 +138,6 @@ func (s *Server) GetQRCodeFromStore(ctx context.Context, request GetQRCodeFromSt
 
 // QRStore - store QR code
 func (s *Server) QRStore(ctx context.Context, request QRStoreRequestObject) (QRStoreResponseObject, error) {
-	uv, err := uuid.NewV4()
-	if err != nil {
-		return QRStore500JSONResponse{
-			N500JSONResponse: N500JSONResponse{
-				Message: "Failed to generate uuid",
-			},
-		}, nil
-	}
-
 	if request.Body.Body.CallbackUrl == "" {
 		return QRStore400JSONResponse{
 			N400JSONResponse: N400JSONResponse{
@@ -208,6 +202,7 @@ func (s *Server) QRStore(ctx context.Context, request QRStoreRequestObject) (QRS
 		}, nil
 	}
 
+	uv := uuid.New()
 	s.cache.Set(uv.String(), request.Body, 1*time.Hour)
 	hostURL := s.cfg.Host
 	shortURL := fmt.Sprintf("iden3comm://?request_uri=%s%s?id=%s", hostURL, "/qr-store", uv.String())
@@ -227,8 +222,8 @@ func (s *Server) SignIn(ctx context.Context, request SignInRequestObject) (SignI
 		return check, nil
 	}
 
-	sessionID := rand.Intn(randomSeed)
-	uri := fmt.Sprintf("%s%s?sessionID=%s", rURL, config.CallbackURL, strconv.Itoa(sessionID))
+	sessionID := uuid.New()
+	uri := fmt.Sprintf("%s%s?sessionID=%s", rURL, config.CallbackURL, sessionID)
 
 	var senderDID string
 	if request.Body.ChainID == "80001" {
@@ -259,7 +254,7 @@ func (s *Server) SignIn(ctx context.Context, request SignInRequestObject) (SignI
 	}
 
 	authorizationRequest.Body.Scope = append(authorizationRequest.Body.Scope, mtpProofRequest)
-	s.cache.Set(strconv.Itoa(sessionID), authorizationRequest, cache.DefaultExpiration)
+	s.cache.Set(sessionID.String(), authorizationRequest, cache.DefaultExpiration)
 
 	response := SignIn200JSONResponse{
 		QrCode:    getQRCode(authorizationRequest),
@@ -312,7 +307,7 @@ func getQRCode(request protocol.AuthorizationRequestMessage) QRCode {
 // Status - status
 func (s *Server) Status(_ context.Context, request StatusRequestObject) (StatusResponseObject, error) {
 	id := request.Params.SessionID
-	item, ok := s.cache.Get(id)
+	item, ok := s.cache.Get(id.String())
 	if !ok {
 		log.WithFields(log.Fields{
 			"sessionID": id,
@@ -326,10 +321,13 @@ func (s *Server) Status(_ context.Context, request StatusRequestObject) (StatusR
 
 	switch item.(type) {
 	case protocol.AuthorizationRequestMessage:
-		return Status404JSONResponse{
-			N404JSONResponse: N404JSONResponse{
-				Message: "no authorization response yet",
-			},
+		return Status200JSONResponse{
+			Status: StatusPending,
+		}, nil
+	case error:
+		return Status200JSONResponse{
+			Status:  StatusError,
+			Message: common.ToPointer(item.(error).Error()),
 		}, nil
 	case string:
 		b, err := json.Marshal(item)
@@ -353,7 +351,8 @@ func (s *Server) Status(_ context.Context, request StatusRequestObject) (StatusR
 			}, nil
 		}
 		return Status200JSONResponse{
-			Jwz: m,
+			Status: StatusSuccess,
+			Jwz:    common.ToPointer(m),
 		}, nil
 	}
 	return nil, nil

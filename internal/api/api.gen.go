@@ -71,19 +71,28 @@ type SignInRequest struct {
 // SingInResponse defines model for SingInResponse.
 type SingInResponse struct {
 	QrCode    QRCode `json:"qrCode"`
-	SessionID int    `json:"sessionID"`
+	SessionID UUID   `json:"sessionID"`
 }
 
 // StatusResponse defines model for StatusResponse.
 type StatusResponse struct {
-	Jwz string `json:"jwz"`
+	Jwz *string `json:"jwz"`
+
+	// Message error message
+	Message *string `json:"message"`
+
+	// Status pending, success, error
+	Status string `json:"status"`
 }
+
+// UUID defines model for UUID.
+type UUID = uuid.UUID
 
 // Id defines model for id.
 type Id = uuid.UUID
 
 // SessionID defines model for sessionID.
-type SessionID = string
+type SessionID = uuid.UUID
 
 // N400 defines model for 400.
 type N400 = GenericErrorMessage
@@ -99,7 +108,7 @@ type CallbackTextBody = string
 
 // CallbackParams defines parameters for Callback.
 type CallbackParams struct {
-	// SessionID Session ID e.g: 123456
+	// SessionID ID e.g: 89d298fa-15a6-4a1d-ab13-d1069467eedd
 	SessionID SessionID `form:"sessionID" json:"sessionID"`
 }
 
@@ -111,7 +120,7 @@ type GetQRCodeFromStoreParams struct {
 
 // StatusParams defines parameters for Status.
 type StatusParams struct {
-	// SessionID Session ID e.g: 123456
+	// SessionID ID e.g: 89d298fa-15a6-4a1d-ab13-d1069467eedd
 	SessionID SessionID `form:"sessionID" json:"sessionID"`
 }
 
