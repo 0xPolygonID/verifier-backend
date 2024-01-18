@@ -3,9 +3,11 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -29,6 +31,9 @@ const (
 	statusPending        = "pending"
 	statusSuccess        = "success"
 	statusError          = "error"
+	mumbaiNetwork        = "80001"
+	mainnetNetwork       = "137"
+	defaultReason        = "test flow"
 )
 
 // Server represents the API server
@@ -138,14 +143,6 @@ func (s *Server) GetQRCodeFromStore(ctx context.Context, request GetQRCodeFromSt
 
 // QRStore - store QR code
 func (s *Server) QRStore(ctx context.Context, request QRStoreRequestObject) (QRStoreResponseObject, error) {
-	if request.Body.Body.CallbackUrl == "" {
-		return QRStore400JSONResponse{
-			N400JSONResponse: N400JSONResponse{
-				Message: "field callbackUrl body is empty",
-			},
-		}, nil
-	}
-
 	if request.Body.Body.Reason == "" {
 		return QRStore400JSONResponse{
 			N400JSONResponse: N400JSONResponse{
@@ -210,98 +207,36 @@ func (s *Server) QRStore(ctx context.Context, request QRStoreRequestObject) (QRS
 }
 
 // SignIn - sign in
-func (s *Server) SignIn(ctx context.Context, request SignInRequestObject) (SignInResponseObject, error) {
-	rURL := s.cfg.Host
-
-	check, err := checkRequest(request)
-	if err != nil {
-		return nil, err
-	}
-
-	if check != nil {
-		return check, nil
-	}
-
+func (s *Server) SignIn(_ context.Context, request SignInRequestObject) (SignInResponseObject, error) {
 	sessionID := uuid.New()
-	uri := fmt.Sprintf("%s%s?sessionID=%s", rURL, config.CallbackURL, sessionID)
 
-	var senderDID string
-	if request.Body.ChainID == "80001" {
-		senderDID = s.cfg.MumbaiSenderDID
-	} else {
-		senderDID = s.cfg.MainSenderDID
-	}
-
-	authorizationRequest := auth.CreateAuthorizationRequest("test flow", senderDID, uri)
-
-	// TODO - Ask when could be false
-	isLocal := true
-	if isLocal {
-		authorizationRequest.ID = "7f38a193-0918-4a48-9fac-36adfdb8b542"
-		authorizationRequest.ThreadID = "7f38a193-0918-4a48-9fac-36adfdb8b542"
-	}
-
-	// TODO: Why ID is 1. Ask
-	mtpProofRequest := protocol.ZeroKnowledgeProofRequest{
-		ID:        uint32(1),
-		CircuitID: request.Body.CircuitID,
-		Query:     request.Body.Query,
-	}
-
-	authorizationRequest.To = ""
-	if request.Body.To != nil {
-		authorizationRequest.To = *request.Body.To
-	}
-
-	authorizationRequest.Body.Scope = append(authorizationRequest.Body.Scope, mtpProofRequest)
-	s.cache.Set(sessionID.String(), authorizationRequest, cache.DefaultExpiration)
-
-	response := SignIn200JSONResponse{
-		QrCode:    getQRCode(authorizationRequest),
-		SessionID: sessionID,
-	}
-
-	return response, nil
-}
-
-func getQRCode(request protocol.AuthorizationRequestMessage) QRCode {
-	scopes := make([]Scope, len(request.Body.Scope))
-	for i, scope := range request.Body.Scope {
-		scopes[i] = Scope{
-			CircuitId: scope.CircuitID,
-			Id:        int(scope.ID),
-			Query:     scope.Query,
+	switch request.Body.CircuitID {
+	case "credentialAtomicQuerySigV2", "credentialAtomicQueryMTPV2", "credentialAtomicQueryV3-beta.0":
+		authReq, err := getAuthRequestOffChain(request, s.cfg, sessionID)
+		if err != nil {
+			log.Error(err)
+			return SignIn400JSONResponse{N400JSONResponse{err.Error()}}, nil
 		}
+		s.cache.Set(sessionID.String(), authReq, cache.DefaultExpiration)
+		return SignIn200JSONResponse{
+			QrCode:    getAuthReqQRCode(authReq),
+			SessionID: sessionID,
+		}, nil
+	case "credentialAtomicQuerySigV2OnChain", "credentialAtomicQueryMTPV2OnChain":
+		invokeReq, err := getContractInvokeRequestOnChain(request, s.cfg)
+		if err != nil {
+			log.Error(err)
+			return SignIn400JSONResponse{N400JSONResponse{err.Error()}}, nil
+		}
+		s.cache.Set(sessionID.String(), invokeReq, cache.DefaultExpiration)
+		return SignIn200JSONResponse{
+			QrCode:    getInvokeContractQRCode(invokeReq),
+			SessionID: sessionID,
+		}, nil
+	default:
+		log.Errorf("invalid circuitID: %s", request.Body.CircuitID)
+		return SignIn400JSONResponse{N400JSONResponse{Message: "invalid circuitID"}}, nil
 	}
-
-	type bodyType struct {
-		CallbackUrl string  `json:"callbackUrl"`
-		Reason      string  `json:"reason"`
-		Scope       []Scope `json:"scope"`
-	}
-
-	body := bodyType{
-		CallbackUrl: request.Body.CallbackURL,
-		Reason:      request.Body.Reason,
-		Scope:       scopes,
-	}
-
-	qrCode := QRCode{
-		From: request.From,
-		Id:   request.ID,
-		Thid: request.ThreadID,
-		Typ:  string(request.Typ),
-		Type: string(request.Type),
-		Body: body,
-	}
-
-	if request.To == "" {
-		qrCode.To = nil
-	} else {
-		qrCode.To = &request.To
-	}
-
-	return qrCode
 }
 
 // Status - status
@@ -394,61 +329,203 @@ func (s *Server) parseResolverSettings() map[string]pubsignals.StateResolver {
 	return resolvers
 }
 
-func checkRequest(request SignInRequestObject) (SignInResponseObject, error) {
-	if request.Body.ChainID != "80001" && request.Body.ChainID != "137" {
-		log.WithFields(log.Fields{
-			"network": request.Body.ChainID,
-		}).Error("invalid Chain ID - must be 80001 or 137")
-
-		return SignIn400JSONResponse{N400JSONResponse: N400JSONResponse{
-			Message: "invalid Chain ID - must be 80001 or 137",
-		}}, nil
+func getAuthReqQRCode(request protocol.AuthorizationRequestMessage) QRCode {
+	scopes := make([]Scope, 0, len(request.Body.Scope))
+	for _, scope := range request.Body.Scope {
+		scopes = append(scopes, Scope{
+			CircuitId: scope.CircuitID,
+			Id:        int(scope.ID),
+			Query:     scope.Query,
+		})
 	}
 
-	if request.Body.CircuitID != "credentialAtomicQuerySigV2" && request.Body.CircuitID != "credentialAtomicQueryMTPV2" && request.Body.CircuitID != "credentialAtomicQueryV3-beta.0" {
-		log.WithFields(log.Fields{
-			"circuitID": request.Body.CircuitID,
-		}).Error("invalid circuitID")
-		return SignIn400JSONResponse{N400JSONResponse: N400JSONResponse{
-			Message: "invalid circuitID, just credentialAtomicQuerySigV2, credentialAtomicQueryMTPV2 and credentialAtomicQueryV3-beta.0 are supported",
-		}}, nil
+	qrCode := QRCode{
+		From: request.From,
+		Id:   request.ID,
+		Thid: request.ThreadID,
+		Typ:  string(request.Typ),
+		Type: string(request.Type),
+		Body: Body{
+			CallbackUrl: common.ToPointer(request.Body.CallbackURL),
+			Reason:      request.Body.Reason,
+			Scope:       scopes,
+		},
+	}
+	if request.To != "" {
+		qrCode.To = &request.To
 	}
 
-	query := request.Body.Query
+	return qrCode
+}
+
+func getInvokeContractQRCode(request protocol.ContractInvokeRequestMessage) QRCode {
+	scopes := make([]Scope, 0, len(request.Body.Scope))
+	for _, scope := range request.Body.Scope {
+		scopes = append(scopes, Scope{
+			CircuitId: scope.CircuitID,
+			Id:        int(scope.ID),
+			Query:     scope.Query,
+		})
+	}
+
+	qrCode := QRCode{
+		From: request.From,
+		Id:   request.ID,
+		Thid: request.ThreadID,
+		Typ:  string(request.Typ),
+		Type: string(request.Type),
+		Body: Body{
+			Reason: request.Body.Reason,
+			Scope:  scopes,
+			TransactionData: &TransactionDataResponse{
+				ChainId:         request.Body.TransactionData.ChainID,
+				ContractAddress: request.Body.TransactionData.ContractAddress,
+				MethodId:        request.Body.TransactionData.MethodID,
+				Network:         request.Body.TransactionData.Network,
+			},
+		},
+	}
+	if request.To != "" {
+		qrCode.To = &request.To
+	}
+
+	return qrCode
+}
+
+func validateOffChainRequest(request SignInRequestObject) error {
+	if request.Body.ChainID == nil {
+		return fmt.Errorf("field chainId is empty expected %s or %s", mumbaiNetwork, mainnetNetwork)
+	}
+
+	if *request.Body.ChainID != "80001" && *request.Body.ChainID != "137" {
+		return fmt.Errorf("field chainId value is wrong, got %s, expected %s or %s", *request.Body.ChainID, mumbaiNetwork, mainnetNetwork)
+	}
+
+	if err := validateRequestQuery(request.Body.Query); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func validateRequestQuery(query map[string]interface{}) error {
 	if query == nil {
-		log.Error("query is nil")
-		return SignIn400JSONResponse{N400JSONResponse: N400JSONResponse{
-			Message: "query is nil",
-		}}, nil
+		return errors.New("field query is empty")
 	}
 
 	if query["context"] == nil || query["context"] == "" {
-		log.Error("context is empty")
-		return SignIn400JSONResponse{N400JSONResponse: N400JSONResponse{
-			Message: "context is empty",
-		}}, nil
+		return errors.New("context cannot be empty")
 	}
 
 	if query["type"] == nil || query["type"] == "" {
-		log.Error("type is empty")
-		return SignIn400JSONResponse{N400JSONResponse: N400JSONResponse{
-			Message: "type is empty",
-		}}, nil
+		return errors.New("type cannot be empty")
 	}
 
 	if query["allowedIssuers"] == nil {
-		log.Error("allowedIssuers is nil")
-		return SignIn400JSONResponse{N400JSONResponse: N400JSONResponse{
-			Message: "allowedIssuers is empty",
-		}}, nil
+		return errors.New("allowedIssuers cannot be empty")
 	}
 
 	if query["credentialSubject"] == nil {
-		log.Error("credentialSubject is nil")
-		return SignIn400JSONResponse{N400JSONResponse: N400JSONResponse{
-			Message: "credentialSubject is empty",
-		}}, nil
+		return errors.New("credentialSubject cannot be empty")
 	}
 
-	return nil, nil
+	return nil
+}
+
+func getAuthRequestOffChain(req SignInRequestObject, cfg config.Config, sessionID uuid.UUID) (protocol.AuthorizationRequestMessage, error) {
+	if err := validateOffChainRequest(req); err != nil {
+		return protocol.AuthorizationRequestMessage{}, err
+	}
+
+	id := uuid.NewString()
+	authReq := auth.CreateAuthorizationRequest(getReason(req.Body.Reason), getSenderID(*req.Body.ChainID, cfg), getUri(cfg, sessionID))
+	authReq.ID = id
+	authReq.ThreadID = id
+	authReq.To = ""
+	if req.Body.To != nil {
+		authReq.To = *req.Body.To
+	}
+
+	mtpProofRequest := protocol.ZeroKnowledgeProofRequest{
+		ID:        uint32(1),
+		CircuitID: req.Body.CircuitID,
+		Query:     req.Body.Query,
+	}
+	authReq.Body.Scope = append(authReq.Body.Scope, mtpProofRequest)
+
+	return authReq, nil
+}
+
+func checkOnChainRequest(req SignInRequestObject) error {
+	if err := validateRequestQuery(req.Body.Query); err != nil {
+		return err
+	}
+
+	if req.Body.TransactionData == nil {
+		return errors.New("field transactionData is empty")
+	}
+
+	if req.Body.TransactionData.ChainID <= 0 {
+		return errors.New("field chainId is empty")
+	}
+
+	if req.Body.TransactionData.ContractAddress == "" {
+		return errors.New("field contractAddress is empty")
+	}
+
+	if req.Body.TransactionData.MethodID == "" {
+		return errors.New("field methodId is empty")
+	}
+
+	if req.Body.TransactionData.Network == "" {
+		return errors.New("field network is empty")
+	}
+
+	return nil
+}
+
+func getContractInvokeRequestOnChain(req SignInRequestObject, cfg config.Config) (protocol.ContractInvokeRequestMessage, error) {
+	if err := checkOnChainRequest(req); err != nil {
+		return protocol.ContractInvokeRequestMessage{}, err
+	}
+
+	mtpProofRequest := protocol.ZeroKnowledgeProofRequest{
+		ID:        uint32(1),
+		CircuitID: req.Body.CircuitID,
+		Query:     req.Body.Query,
+	}
+	transactionData := protocol.TransactionData{
+		ContractAddress: req.Body.TransactionData.ContractAddress,
+		MethodID:        req.Body.TransactionData.MethodID,
+		ChainID:         req.Body.TransactionData.ChainID,
+		Network:         req.Body.TransactionData.Network,
+	}
+	id := uuid.NewString()
+	authReq := auth.CreateContractInvokeRequest(getReason(req.Body.Reason), getSenderID(strconv.Itoa(transactionData.ChainID), cfg), transactionData, mtpProofRequest)
+	authReq.ID = id
+	authReq.ThreadID = id
+	authReq.To = ""
+	if req.Body.To != nil {
+		authReq.To = *req.Body.To
+	}
+
+	return authReq, nil
+}
+
+func getSenderID(chainID string, cfg config.Config) string {
+	if chainID == mumbaiNetwork {
+		return cfg.MumbaiSenderDID
+	}
+	return cfg.MainSenderDID
+}
+
+func getUri(cfg config.Config, sessionID uuid.UUID) string {
+	return fmt.Sprintf("%s%s?sessionID=%s", cfg.Host, config.CallbackURL, sessionID)
+}
+
+func getReason(reason *string) string {
+	if reason == nil {
+		return defaultReason
+	}
+	return *reason
 }

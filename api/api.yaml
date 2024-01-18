@@ -50,6 +50,52 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SignInRequest'
+              examples:
+                OffChain:
+                  value:
+                    {
+                      "chainID": "80001",
+                      "circuitID": "credentialAtomicQuerySigV2",
+                      "reason": "test flow",
+                      "to": null,
+                      "query": {
+                        "context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+                        "allowedIssuers": [
+                          "*"
+                        ],
+                        "type": "KYCAgeCredential",
+                        "credentialSubject": {
+                          "birthday": {
+                            "$lt": 20200424
+                          }
+                        }
+                      }
+                    }
+                OnChain:
+                  value:
+                    {
+                      "circuitID": "credentialAtomicQuerySigV2OnChain",
+                      "reason": "test flow",
+                      "to": null,
+                      "query": {
+                        "context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+                        "allowedIssuers": [
+                          "*"
+                        ],
+                        "type": "KYCAgeCredential",
+                        "credentialSubject": {
+                          "birthday": {
+                            "$lt": 20020101
+                          }
+                        }
+                      },
+                      "transactionData": {
+                        "contractAddress": "0xE826f870852D7eeeB79B2C030298f9B5DAA8C8a3",
+                        "methodID": "b68967e2",
+                        "chainID": 80001,
+                        "network": "polygon-mumbai"
+                      }
+                    }
       responses:
         '200':
           description: Authorization Request created
@@ -257,28 +303,32 @@ components:
           type: string
           example: '6dc645a6-2be3-4099-a645-20784ee53cd0'
         body:
-          type: object
-          required:
-            - callbackUrl
-            - reason
-            - scope
-          properties:
-            callbackUrl:
-              type: string
-              example: 'https://verifier-backend/callback?sessionId=6dc645a6-2be3-4099-a645-20784ee53cd0'
-            reason:
-              type: string
-              example: 'test flow'
-            scope:
-              type: array
-              items:
-                $ref: '#/components/schemas/Scope'
+          $ref: '#/components/schemas/Body'
         from:
-            type: string
-            example: 'did:polygonid:polygon:mumbai:2qH7TstpRRJHXNN4o49Fu9H2Qismku8hQeUxDVrjqT'
+          type: string
+          example: 'did:polygonid:polygon:mumbai:2qH7TstpRRJHXNN4o49Fu9H2Qismku8hQeUxDVrjqT'
         to:
           type: string
           example: 'did:polygonid:polygon:mumbai:2qEATqfECVbCBzq9EhJpPSiv1xtJRpbMBKDaNM68Ci'
+
+    Body:
+      type: object
+      required:
+        - reason
+        - scope
+      properties:
+        transaction_data:
+          $ref: '#/components/schemas/TransactionDataResponse'
+        callbackUrl:
+          type: string
+          example: 'https://verifier-backend/callback?sessionId=6dc645a6-2be3-4099-a645-20784ee53cd0'
+        reason:
+          type: string
+          example: 'test flow'
+        scope:
+          type: array
+          items:
+            $ref: '#/components/schemas/Scope'
 
     Scope:
       type: object
@@ -313,24 +363,75 @@ components:
     SignInRequest:
       type: object
       required:
-        - chainID
-        - circuitID
         - query
+        - circuitID
       properties:
         chainID:
           type: string
           description: |
+            Only required when using off-chain verification
             `80001`: `mumbai`
             `137` : `mainnet`
           example: '80001'
         circuitID:
           type: string
           example: 'credentialAtomicQuerySigV2'
+        reason:
+          type: string
+          example: 'test flow'
         to:
           type: string
           example: null
         query:
           $ref : '#/components/schemas/Query'
+        transactionData:
+          $ref : '#/components/schemas/TransactionData'
+
+    TransactionDataResponse:
+      type: object
+      description: |
+        Only required when using on-chain verification
+      required:
+        - contract_address
+        - method_id
+        - chain_id
+        - network
+      properties:
+        contract_address:
+          type: string
+          example: '0xE826f870852D7eeeB79B2C030298f9B5DAA8C8a3'
+        method_id:
+          type: string
+          example: 'b68967e2'
+        chain_id:
+          type: integer
+          example: 80001
+        network:
+          type: string
+          example: 'polygon-mumbai'
+
+    TransactionData:
+      type: object
+      description: |
+        Only required when using on-chain verification
+      required:
+        - contractAddress
+        - methodID
+        - chainID
+        - network
+      properties:
+        contractAddress:
+          type: string
+          example: '0xE826f870852D7eeeB79B2C030298f9B5DAA8C8a3'
+        methodID:
+          type: string
+          example: 'b68967e2'
+        chainID:
+          type: integer
+          example: 80001
+        network:
+          type: string
+          example: 'polygon-mumbai'
 
     UUID:
       type: string

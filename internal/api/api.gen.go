@@ -16,6 +16,16 @@ import (
 	strictnethttp "github.com/oapi-codegen/runtime/strictmiddleware/nethttp"
 )
 
+// Body defines model for Body.
+type Body struct {
+	CallbackUrl *string `json:"callbackUrl,omitempty"`
+	Reason      string  `json:"reason"`
+	Scope       []Scope `json:"scope"`
+
+	// TransactionData Only required when using on-chain verification
+	TransactionData *TransactionDataResponse `json:"transaction_data,omitempty"`
+}
+
 // CallbackResponse defines model for CallbackResponse.
 type CallbackResponse = map[string]interface{}
 
@@ -29,11 +39,7 @@ type Health = map[string]interface{}
 
 // QRCode defines model for QRCode.
 type QRCode struct {
-	Body struct {
-		CallbackUrl string  `json:"callbackUrl"`
-		Reason      string  `json:"reason"`
-		Scope       []Scope `json:"scope"`
-	} `json:"body"`
+	Body Body    `json:"body"`
 	From string  `json:"from"`
 	Id   string  `json:"id"`
 	Thid string  `json:"thid"`
@@ -60,12 +66,17 @@ type Scope struct {
 
 // SignInRequest defines model for SignInRequest.
 type SignInRequest struct {
-	// ChainID `80001`: `mumbai`
+	// ChainID Only required when using off-chain verification
+	// `80001`: `mumbai`
 	// `137` : `mainnet`
-	ChainID   string  `json:"chainID"`
+	ChainID   *string `json:"chainID,omitempty"`
 	CircuitID string  `json:"circuitID"`
 	Query     Query   `json:"query"`
+	Reason    *string `json:"reason,omitempty"`
 	To        *string `json:"to,omitempty"`
+
+	// TransactionData Only required when using on-chain verification
+	TransactionData *TransactionData `json:"transactionData,omitempty"`
 }
 
 // SingInResponse defines model for SingInResponse.
@@ -83,6 +94,22 @@ type StatusResponse struct {
 
 	// Status pending, success, error
 	Status string `json:"status"`
+}
+
+// TransactionData Only required when using on-chain verification
+type TransactionData struct {
+	ChainID         int    `json:"chainID"`
+	ContractAddress string `json:"contractAddress"`
+	MethodID        string `json:"methodID"`
+	Network         string `json:"network"`
+}
+
+// TransactionDataResponse Only required when using on-chain verification
+type TransactionDataResponse struct {
+	ChainId         int    `json:"chain_id"`
+	ContractAddress string `json:"contract_address"`
+	MethodId        string `json:"method_id"`
+	Network         string `json:"network"`
 }
 
 // UUID defines model for UUID.

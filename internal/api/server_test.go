@@ -22,12 +22,6 @@ func TestSignIn(t *testing.T) {
 		SignInResponseObject
 	}
 
-	type bodyType struct {
-		CallbackUrl string  `json:"callbackUrl"`
-		Reason      string  `json:"reason"`
-		Scope       []Scope `json:"scope"`
-	}
-
 	type testConfig struct {
 		name     string
 		body     SignInRequestObject
@@ -39,7 +33,7 @@ func TestSignIn(t *testing.T) {
 			name: "valid request for credentialAtomicQuerySigV2 circuit with KYCAgeCredential",
 			body: SignInRequestObject{
 				Body: &SignInJSONRequestBody{
-					ChainID:   "80001",
+					ChainID:   common.ToPointer("80001"),
 					CircuitID: "credentialAtomicQuerySigV2",
 					Query: jsonToMap(t, `{
 						"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
@@ -57,11 +51,7 @@ func TestSignIn(t *testing.T) {
 				httpCode: http.StatusOK,
 				SignInResponseObject: SignIn200JSONResponse{
 					QrCode: QRCode{
-						Body: struct {
-							CallbackUrl string  `json:"callbackUrl"`
-							Reason      string  `json:"reason"`
-							Scope       []Scope `json:"scope"`
-						}(bodyType{
+						Body: Body{
 							Scope: []Scope{
 								{
 									CircuitId: "credentialAtomicQuerySigV2",
@@ -78,7 +68,7 @@ func TestSignIn(t *testing.T) {
 									},
 								},
 							},
-						}),
+						},
 						From: cfg.MumbaiSenderDID,
 						To:   nil,
 						Typ:  "application/iden3comm-plain-json",
@@ -91,7 +81,7 @@ func TestSignIn(t *testing.T) {
 			name: "valid request for credentialAtomicQuerySigV2 circuit with KYCAgeCredential and to field",
 			body: SignInRequestObject{
 				Body: &SignInJSONRequestBody{
-					ChainID:   "80001",
+					ChainID:   common.ToPointer("80001"),
 					CircuitID: "credentialAtomicQuerySigV2",
 					Query: jsonToMap(t, `{
 						"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
@@ -110,7 +100,7 @@ func TestSignIn(t *testing.T) {
 				httpCode: http.StatusOK,
 				SignInResponseObject: SignIn200JSONResponse{
 					QrCode: QRCode{
-						Body: bodyType{
+						Body: Body{
 							Scope: []Scope{
 								{
 									CircuitId: "credentialAtomicQuerySigV2",
@@ -140,7 +130,7 @@ func TestSignIn(t *testing.T) {
 			name: "valid request for credentialAtomicQueryMTPV2 circuit with KYCAgeCredential",
 			body: SignInRequestObject{
 				Body: &SignInJSONRequestBody{
-					ChainID:   "80001",
+					ChainID:   common.ToPointer("80001"),
 					CircuitID: "credentialAtomicQueryMTPV2",
 					Query: jsonToMap(t, `{
 						"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
@@ -158,7 +148,7 @@ func TestSignIn(t *testing.T) {
 				httpCode: http.StatusOK,
 				SignInResponseObject: SignIn200JSONResponse{
 					QrCode: QRCode{
-						Body: bodyType{
+						Body: Body{
 							Scope: []Scope{
 								{
 									CircuitId: "credentialAtomicQueryMTPV2",
@@ -188,7 +178,7 @@ func TestSignIn(t *testing.T) {
 			name: "valid request for credentialAtomicQueryV3-beta.0 circuit with KYCAgeCredential",
 			body: SignInRequestObject{
 				Body: &SignInJSONRequestBody{
-					ChainID:   "80001",
+					ChainID:   common.ToPointer("80001"),
 					CircuitID: "credentialAtomicQueryMTPV2",
 					Query: jsonToMap(t, `{
 						"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
@@ -207,7 +197,7 @@ func TestSignIn(t *testing.T) {
 				httpCode: http.StatusOK,
 				SignInResponseObject: SignIn200JSONResponse{
 					QrCode: QRCode{
-						Body: bodyType{
+						Body: Body{
 							Scope: []Scope{
 								{
 									CircuitId: "credentialAtomicQueryMTPV2",
@@ -238,14 +228,15 @@ func TestSignIn(t *testing.T) {
 			name: "invalid request - invalid ChainID",
 			body: SignInRequestObject{
 				Body: &SignInJSONRequestBody{
-					ChainID: "invalid",
+					ChainID:   common.ToPointer("invalid"),
+					CircuitID: "credentialAtomicQueryMTPV2",
 				},
 			},
 			expected: expected{
 				httpCode: http.StatusBadRequest,
 				SignInResponseObject: SignIn400JSONResponse{
 					N400JSONResponse{
-						Message: "invalid Chain ID - must be 80001 or 137",
+						Message: "field chainId value is wrong, got invalid, expected 80001 or 137",
 					},
 				},
 			},
@@ -254,7 +245,7 @@ func TestSignIn(t *testing.T) {
 			name: "invalid request - invalid circuitID",
 			body: SignInRequestObject{
 				Body: &SignInJSONRequestBody{
-					ChainID:   "80001",
+					ChainID:   common.ToPointer("80001"),
 					CircuitID: "invalid",
 				},
 			},
@@ -262,7 +253,7 @@ func TestSignIn(t *testing.T) {
 				httpCode: http.StatusBadRequest,
 				SignInResponseObject: SignIn400JSONResponse{
 					N400JSONResponse{
-						Message: "invalid circuitID, just credentialAtomicQuerySigV2, credentialAtomicQueryMTPV2 and credentialAtomicQueryV3-beta.0 are supported",
+						Message: "invalid circuitID",
 					},
 				},
 			},
@@ -271,7 +262,7 @@ func TestSignIn(t *testing.T) {
 			name: "invalid request - invalid query - no context",
 			body: SignInRequestObject{
 				Body: &SignInJSONRequestBody{
-					ChainID:   "80001",
+					ChainID:   common.ToPointer("80001"),
 					CircuitID: "credentialAtomicQuerySigV2",
 					Query: jsonToMap(t, `{
 						
@@ -282,7 +273,7 @@ func TestSignIn(t *testing.T) {
 				httpCode: http.StatusBadRequest,
 				SignInResponseObject: SignIn400JSONResponse{
 					N400JSONResponse{
-						Message: "context is empty",
+						Message: "context cannot be empty",
 					},
 				},
 			},
@@ -291,7 +282,7 @@ func TestSignIn(t *testing.T) {
 			name: "invalid request - invalid query - context empty",
 			body: SignInRequestObject{
 				Body: &SignInJSONRequestBody{
-					ChainID:   "80001",
+					ChainID:   common.ToPointer("80001"),
 					CircuitID: "credentialAtomicQuerySigV2",
 					Query: jsonToMap(t, `{
 						"context": ""
@@ -302,7 +293,7 @@ func TestSignIn(t *testing.T) {
 				httpCode: http.StatusBadRequest,
 				SignInResponseObject: SignIn400JSONResponse{
 					N400JSONResponse{
-						Message: "context is empty",
+						Message: "context cannot be empty",
 					},
 				},
 			},
@@ -311,7 +302,7 @@ func TestSignIn(t *testing.T) {
 			name: "invalid request - invalid query - no type",
 			body: SignInRequestObject{
 				Body: &SignInJSONRequestBody{
-					ChainID:   "80001",
+					ChainID:   common.ToPointer("80001"),
 					CircuitID: "credentialAtomicQuerySigV2",
 					Query: jsonToMap(t, `{
 						"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld"
@@ -322,7 +313,144 @@ func TestSignIn(t *testing.T) {
 				httpCode: http.StatusBadRequest,
 				SignInResponseObject: SignIn400JSONResponse{
 					N400JSONResponse{
-						Message: "type is empty",
+						Message: "type cannot be empty",
+					},
+				},
+			},
+		},
+		{
+			name: "invalid request - invalid transaction data",
+			body: SignInRequestObject{
+				Body: &SignInJSONRequestBody{
+					ChainID:   common.ToPointer("80001"),
+					CircuitID: "credentialAtomicQuerySigV2OnChain",
+					Query: jsonToMap(t, `{
+						"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+						"allowedIssuers": ["*"],
+						"type": "KYCAgeCredential",
+						"credentialSubject": {
+							"birthday": {
+								"$eq": 19960424
+							}
+						},
+						"proofType": "BJJSignature2021"
+					  }`),
+				},
+			},
+			expected: expected{
+				httpCode: http.StatusBadRequest,
+				SignInResponseObject: SignIn400JSONResponse{
+					N400JSONResponse{
+						Message: "field transactionData is empty",
+					},
+				},
+			},
+		},
+		{
+			name: "invalid request - invalid transaction data - empty contract",
+			body: SignInRequestObject{
+				Body: &SignInJSONRequestBody{
+					TransactionData: &TransactionData{
+						ChainID:         1234,
+						ContractAddress: "",
+					},
+					ChainID:   common.ToPointer("80001"),
+					CircuitID: "credentialAtomicQuerySigV2OnChain",
+					Query: jsonToMap(t, `{
+						"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+						"allowedIssuers": ["*"],
+						"type": "KYCAgeCredential",
+						"credentialSubject": {
+							"birthday": {
+								"$eq": 19960424
+							}
+						},
+						"proofType": "BJJSignature2021"
+					  }`),
+				},
+			},
+			expected: expected{
+				httpCode: http.StatusBadRequest,
+				SignInResponseObject: SignIn400JSONResponse{
+					N400JSONResponse{
+						Message: "field contractAddress is empty",
+					},
+				},
+			},
+		},
+		{
+			name: "valid on-chain request",
+			body: SignInRequestObject{
+				Body: &SignInJSONRequestBody{
+					TransactionData: &TransactionData{
+						ChainID:         1234,
+						ContractAddress: "0xE826f870852D7eeeB79B2C030298f9B5DAA8C8a3",
+						MethodID:        "123",
+						Network:         mumbaiNetwork,
+					},
+					ChainID:   common.ToPointer("80001"),
+					CircuitID: "credentialAtomicQuerySigV2OnChain",
+					Query: jsonToMap(t, `{
+						"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+						"allowedIssuers": ["*"],
+						"type": "KYCAgeCredential",
+						"credentialSubject": {
+							"birthday": {
+								"$eq": 19960424
+							}
+						},
+						"proofType": "BJJSignature2021"
+					  }`),
+				},
+			},
+			expected: expected{
+				httpCode: http.StatusOK,
+				SignInResponseObject: SignIn200JSONResponse{
+					QrCode: QRCode{
+						Body: Body{
+							Scope: []Scope{
+								{
+									CircuitId: "credentialAtomicQuerySigV2OnChain",
+									Id:        1,
+									Query: map[string]interface{}{
+										"allowedIssuers": []interface{}{"*"},
+										"context":        "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+										"credentialSubject": map[string]interface{}{
+											"birthday": map[string]interface{}{
+												"$eq": float64(19960424),
+											},
+										},
+										"type":      "KYCAgeCredential",
+										"proofType": "BJJSignature2021",
+									},
+								},
+							},
+						},
+						From: cfg.MainSenderDID,
+						To:   nil,
+						Typ:  "application/iden3comm-plain-json",
+						Type: "https://iden3-communication.io/proofs/1.0/contract-invoke-request",
+					},
+				},
+			},
+		},
+		{
+			name: "invalid request - invalid query onchain - empty type",
+			body: SignInRequestObject{
+				Body: &SignInJSONRequestBody{
+					ChainID:   common.ToPointer("80001"),
+					CircuitID: "credentialAtomicQuerySigV2OnChain",
+					Query: jsonToMap(t, `{
+						"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+						"type": ""
+					}`),
+				},
+			},
+			expected: expected{
+				httpCode: http.StatusBadRequest,
+				SignInResponseObject: SignIn400JSONResponse{
+					N400JSONResponse{
+						Message: "type cannot be empty",
 					},
 				},
 			},
@@ -331,7 +459,7 @@ func TestSignIn(t *testing.T) {
 			name: "invalid request - invalid query - empty type",
 			body: SignInRequestObject{
 				Body: &SignInJSONRequestBody{
-					ChainID:   "80001",
+					ChainID:   common.ToPointer("80001"),
 					CircuitID: "credentialAtomicQuerySigV2",
 					Query: jsonToMap(t, `{
 						"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
@@ -343,7 +471,7 @@ func TestSignIn(t *testing.T) {
 				httpCode: http.StatusBadRequest,
 				SignInResponseObject: SignIn400JSONResponse{
 					N400JSONResponse{
-						Message: "type is empty",
+						Message: "type cannot be empty",
 					},
 				},
 			},
@@ -352,7 +480,7 @@ func TestSignIn(t *testing.T) {
 			name: "invalid request - invalid query - no allowedIssuers",
 			body: SignInRequestObject{
 				Body: &SignInJSONRequestBody{
-					ChainID:   "80001",
+					ChainID:   common.ToPointer("80001"),
 					CircuitID: "credentialAtomicQuerySigV2",
 					Query: jsonToMap(t, `{
 						"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
@@ -364,7 +492,7 @@ func TestSignIn(t *testing.T) {
 				httpCode: http.StatusBadRequest,
 				SignInResponseObject: SignIn400JSONResponse{
 					N400JSONResponse{
-						Message: "allowedIssuers is empty",
+						Message: "allowedIssuers cannot be empty",
 					},
 				},
 			},
@@ -373,7 +501,7 @@ func TestSignIn(t *testing.T) {
 			name: "invalid request - invalid query - no credentialSubject",
 			body: SignInRequestObject{
 				Body: &SignInJSONRequestBody{
-					ChainID:   "80001",
+					ChainID:   common.ToPointer("80001"),
 					CircuitID: "credentialAtomicQuerySigV2",
 					Query: jsonToMap(t, `{
 						"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
@@ -386,7 +514,7 @@ func TestSignIn(t *testing.T) {
 				httpCode: http.StatusBadRequest,
 				SignInResponseObject: SignIn400JSONResponse{
 					N400JSONResponse{
-						Message: "credentialSubject is empty",
+						Message: "credentialSubject cannot be empty",
 					},
 				},
 			},
@@ -401,8 +529,13 @@ func TestSignIn(t *testing.T) {
 				require.True(t, ok)
 				expected, ok := tc.expected.SignInResponseObject.(SignIn200JSONResponse)
 				require.True(t, ok)
+				require.NotNil(t, expected.QrCode.Body.Scope)
+				require.Len(t, expected.QrCode.Body.Scope, 1)
 				require.Equal(t, expected.QrCode.Body.Scope, response.QrCode.Body.Scope)
-				assert.True(t, isValidCallBack(t, response.QrCode.Body.CallbackUrl))
+				if expected.QrCode.Body.Scope[0].CircuitId == "credentialAtomicQuerySigV2" || expected.QrCode.Body.Scope[0].CircuitId == "credentialAtomicQueryMTPV2" || expected.QrCode.Body.Scope[0].CircuitId == "credentialAtomicQueryV3-beta.0" {
+					require.NotNil(t, response.QrCode.Body.CallbackUrl)
+					assert.True(t, isValidCallBack(t, *response.QrCode.Body.CallbackUrl))
+				}
 				assert.Equal(t, expected.QrCode.From, response.QrCode.From)
 				assert.Equal(t, expected.QrCode.Typ, response.QrCode.Typ)
 				assert.Equal(t, expected.QrCode.Type, response.QrCode.Type)
@@ -424,12 +557,6 @@ func TestSignIn(t *testing.T) {
 func TestQRStore(t *testing.T) {
 	ctx := context.Background()
 	server := New(cfg, keysLoader)
-
-	type bodyType struct {
-		CallbackUrl string  `json:"callbackUrl"`
-		Reason      string  `json:"reason"`
-		Scope       []Scope `json:"scope"`
-	}
 
 	type expected struct {
 		httpCode int
@@ -453,8 +580,8 @@ func TestQRStore(t *testing.T) {
 					Type: "https://iden3-communication.io/authorization/1.0/request",
 					Thid: "7f38a193-0918-4a48-9fac-36adfdb8b542",
 					Id:   "7f38a193-0918-4a48-9fac-36adfdb8b542",
-					Body: bodyType{
-						CallbackUrl: "http://localhost:3000/callback?n=1",
+					Body: Body{
+						CallbackUrl: common.ToPointer("http://localhost:3000/callback?n=1"),
 						Reason:      "reason",
 						Scope: []Scope{
 							{
@@ -480,8 +607,8 @@ func TestQRStore(t *testing.T) {
 					Type: "https://iden3-communication.io/authorization/1.0/request",
 					Thid: "7f38a193-0918-4a48-9fac-36adfdb8b542",
 					Id:   "7f38a193-0918-4a48-9fac-36adfdb8b542",
-					Body: bodyType{
-						CallbackUrl: "http://localhost:3000/callback?n=1",
+					Body: Body{
+						CallbackUrl: common.ToPointer("http://localhost:3000/callback?n=1"),
 						Reason:      "reason",
 						Scope: []Scope{
 							{
@@ -507,8 +634,8 @@ func TestQRStore(t *testing.T) {
 					Type: "",
 					Thid: "7f38a193-0918-4a48-9fac-36adfdb8b542",
 					Id:   "7f38a193-0918-4a48-9fac-36adfdb8b542",
-					Body: bodyType{
-						CallbackUrl: "http://localhost:3000/callback?n=1",
+					Body: Body{
+						CallbackUrl: common.ToPointer("http://localhost:3000/callback?n=1"),
 						Reason:      "reason",
 						Scope: []Scope{
 							{
@@ -534,8 +661,8 @@ func TestQRStore(t *testing.T) {
 					Type: "https://iden3-communication.io/authorization/1.0/request",
 					Thid: "",
 					Id:   "7f38a193-0918-4a48-9fac-36adfdb8b542",
-					Body: bodyType{
-						CallbackUrl: "http://localhost:3000/callback?n=1",
+					Body: Body{
+						CallbackUrl: common.ToPointer("http://localhost:3000/callback?n=1"),
 						Reason:      "reason",
 						Scope: []Scope{
 							{
@@ -561,8 +688,8 @@ func TestQRStore(t *testing.T) {
 					Type: "https://iden3-communication.io/authorization/1.0/request",
 					Thid: "7f38a193-0918-4a48-9fac-36adfdb8b542",
 					Id:   "",
-					Body: bodyType{
-						CallbackUrl: "http://localhost:3000/callback?n=1",
+					Body: Body{
+						CallbackUrl: common.ToPointer("http://localhost:3000/callback?n=1"),
 						Reason:      "reason",
 						Scope: []Scope{
 							{
@@ -604,7 +731,7 @@ func TestQRStore(t *testing.T) {
 					Type: "https://iden3-communication.io/authorization/1.0/request",
 					Thid: "7f38a193-0918-4a48-9fac-36adfdb8b542",
 					Id:   "7f38a193-0918-4a48-9fac-36adfdb8b542",
-					Body: bodyType{},
+					Body: Body{},
 				},
 			},
 			expected: expected{
@@ -621,35 +748,9 @@ func TestQRStore(t *testing.T) {
 					Type: "https://iden3-communication.io/authorization/1.0/request",
 					Thid: "7f38a193-0918-4a48-9fac-36adfdb8b542",
 					Id:   "7f38a193-0918-4a48-9fac-36adfdb8b542",
-					Body: bodyType{
-						CallbackUrl: "http://localhost:3000/callback?n=1",
+					Body: Body{
+						CallbackUrl: common.ToPointer("http://localhost:3000/callback?n=1"),
 						Reason:      "reason",
-					},
-				},
-			},
-			expected: expected{
-				httpCode: http.StatusBadRequest,
-			},
-		},
-		{
-			name: "invalid request missing callback field",
-			body: QRStoreRequestObject{
-				Body: &QRStoreJSONRequestBody{
-					From: "did:polygonid:polygon:mumbai:2qH7TstpRRJHXNN4o49Fu9H2Qismku8hQeUxDVrjqT",
-					To:   common.ToPointer(""),
-					Typ:  "application/iden3comm-plain-json",
-					Type: "https://iden3-communication.io/authorization/1.0/request",
-					Thid: "7f38a193-0918-4a48-9fac-36adfdb8b542",
-					Id:   "7f38a193-0918-4a48-9fac-36adfdb8b542",
-					Body: bodyType{
-						Reason: "reason",
-						Scope: []Scope{
-							{
-								CircuitId: "credentialAtomicQuerySigV2",
-								Id:        1,
-								Query:     map[string]interface{}{},
-							},
-						},
 					},
 				},
 			},
@@ -667,8 +768,8 @@ func TestQRStore(t *testing.T) {
 					Type: "https://iden3-communication.io/authorization/1.0/request",
 					Thid: "7f38a193-0918-4a48-9fac-36adfdb8b542",
 					Id:   "7f38a193-0918-4a48-9fac-36adfdb8b542",
-					Body: bodyType{
-						CallbackUrl: "http://localhost:3000/callback?n=1",
+					Body: Body{
+						CallbackUrl: common.ToPointer("http://localhost:3000/callback?n=1"),
 						Scope: []Scope{
 							{
 								CircuitId: "credentialAtomicQuerySigV2",
@@ -693,8 +794,8 @@ func TestQRStore(t *testing.T) {
 					Type: "https://iden3-communication.io/authorization/1.0/request",
 					Thid: "7f38a193-0918-4a48-9fac-36adfdb8b542",
 					Id:   "7f38a193-0918-4a48-9fac-36adfdb8b542",
-					Body: bodyType{
-						CallbackUrl: "http://localhost:3000/callback?n=1",
+					Body: Body{
+						CallbackUrl: common.ToPointer("http://localhost:3000/callback?n=1"),
 						Reason:      "reason",
 						Scope: []Scope{
 							{
