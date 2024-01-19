@@ -33,18 +33,22 @@ func TestSignIn(t *testing.T) {
 			name: "valid request for credentialAtomicQuerySigV2 circuit with KYCAgeCredential",
 			body: SignInRequestObject{
 				Body: &SignInJSONRequestBody{
-					ChainID:   common.ToPointer("80001"),
-					CircuitID: "credentialAtomicQuerySigV2",
-					Query: jsonToMap(t, `{
-						"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
-						"allowedIssuers": ["*"],
-						"type": "KYCAgeCredential",
-						"credentialSubject": {
-							"birthday": {
-								"$eq": 19960424
-							}
-						}
-					  }`),
+					ChainID: common.ToPointer("80001"),
+					Scope: []ScopeRequest{
+						{
+							CircuitId: "credentialAtomicQuerySigV2",
+							Query: jsonToMap(t, `{
+								"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+								"allowedIssuers": ["*"],
+								"type": "KYCAgeCredential",
+								"credentialSubject": {
+									"birthday": {
+										"$eq": 19960424
+									}
+								}
+							  }`),
+						},
+					},
 				},
 			},
 			expected: expected{
@@ -55,7 +59,7 @@ func TestSignIn(t *testing.T) {
 							Scope: []Scope{
 								{
 									CircuitId: "credentialAtomicQuerySigV2",
-									Id:        1,
+									Id:        0,
 									Query: map[string]interface{}{
 										"allowedIssuers": []interface{}{"*"},
 										"context":        "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
@@ -81,18 +85,22 @@ func TestSignIn(t *testing.T) {
 			name: "valid request for credentialAtomicQuerySigV2 circuit with KYCAgeCredential and to field",
 			body: SignInRequestObject{
 				Body: &SignInJSONRequestBody{
-					ChainID:   common.ToPointer("80001"),
-					CircuitID: "credentialAtomicQuerySigV2",
-					Query: jsonToMap(t, `{
-						"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
-						"allowedIssuers": ["*"],
-						"type": "KYCAgeCredential",
-						"credentialSubject": {
-							"birthday": {
-								"$eq": 19960424
+					ChainID: common.ToPointer("80001"),
+					Scope: []ScopeRequest{
+						{
+							CircuitId: "credentialAtomicQuerySigV2",
+							Query: jsonToMap(t, `{
+							"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+							"allowedIssuers": ["*"],
+							"type": "KYCAgeCredential",
+							"credentialSubject": {
+								"birthday": {
+									"$eq": 19960424
+								}
 							}
-						}
-					  }`),
+						  }`),
+						},
+					},
 					To: common.ToPointer("did:polygonid:polygon:mumbai:2qEATqfECVbCBzq9EhJpPSiv1xtJRpbMBKDaNM68Ci"),
 				},
 			},
@@ -104,7 +112,7 @@ func TestSignIn(t *testing.T) {
 							Scope: []Scope{
 								{
 									CircuitId: "credentialAtomicQuerySigV2",
-									Id:        1,
+									Id:        0,
 									Query: map[string]interface{}{
 										"allowedIssuers": []interface{}{"*"},
 										"context":        "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
@@ -130,18 +138,22 @@ func TestSignIn(t *testing.T) {
 			name: "valid request for credentialAtomicQueryMTPV2 circuit with KYCAgeCredential",
 			body: SignInRequestObject{
 				Body: &SignInJSONRequestBody{
-					ChainID:   common.ToPointer("80001"),
-					CircuitID: "credentialAtomicQueryMTPV2",
-					Query: jsonToMap(t, `{
-						"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
-						"allowedIssuers": ["*"],
-						"type": "KYCAgeCredential",
-						"credentialSubject": {
-							"birthday": {
-								"$eq": 19960424
+					ChainID: common.ToPointer("80001"),
+					Scope: []ScopeRequest{
+						{
+							CircuitId: "credentialAtomicQueryMTPV2",
+							Query: jsonToMap(t, `{
+							"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+							"allowedIssuers": ["*"],
+							"type": "KYCAgeCredential",
+							"credentialSubject": {
+								"birthday": {
+									"$eq": 19960424
+								}
 							}
-						}
-					  }`),
+						  }`),
+						},
+					},
 				},
 			},
 			expected: expected{
@@ -152,7 +164,7 @@ func TestSignIn(t *testing.T) {
 							Scope: []Scope{
 								{
 									CircuitId: "credentialAtomicQueryMTPV2",
-									Id:        1,
+									Id:        0,
 									Query: map[string]interface{}{
 										"allowedIssuers": []interface{}{"*"},
 										"context":        "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
@@ -178,19 +190,23 @@ func TestSignIn(t *testing.T) {
 			name: "valid request for credentialAtomicQueryV3-beta.0 circuit with KYCAgeCredential",
 			body: SignInRequestObject{
 				Body: &SignInJSONRequestBody{
-					ChainID:   common.ToPointer("80001"),
-					CircuitID: "credentialAtomicQueryMTPV2",
-					Query: jsonToMap(t, `{
-						"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
-						"allowedIssuers": ["*"],
-						"type": "KYCAgeCredential",
-						"credentialSubject": {
-							"birthday": {
-								"$eq": 19960424
-							}
+					ChainID: common.ToPointer("80001"),
+					Scope: []ScopeRequest{
+						{
+							CircuitId: "credentialAtomicQueryV3-beta.0",
+							Query: jsonToMap(t, `{
+							"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+							"allowedIssuers": ["*"],
+							"type": "KYCAgeCredential",
+							"credentialSubject": {
+								"birthday": {
+									"$eq": 19960424
+								}
+							},
+							"proofType": "BJJSignature2021"
+						  }`),
 						},
-						"proofType": "BJJSignature2021"
-					  }`),
+					},
 				},
 			},
 			expected: expected{
@@ -200,8 +216,8 @@ func TestSignIn(t *testing.T) {
 						Body: Body{
 							Scope: []Scope{
 								{
-									CircuitId: "credentialAtomicQueryMTPV2",
-									Id:        1,
+									CircuitId: "credentialAtomicQueryV3-beta.0",
+									Id:        0,
 									Query: map[string]interface{}{
 										"allowedIssuers": []interface{}{"*"},
 										"context":        "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
@@ -225,11 +241,201 @@ func TestSignIn(t *testing.T) {
 			},
 		},
 		{
+			name: "valid request for credentialAtomicQueryV3-beta.0 and TestInteger01 circuits",
+			body: SignInRequestObject{
+				Body: &SignInJSONRequestBody{
+					ChainID: common.ToPointer("80001"),
+					Scope: []ScopeRequest{
+						{
+							CircuitId: "credentialAtomicQueryV3-beta.0",
+							Query: jsonToMap(t, `{
+							"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+							"allowedIssuers": ["*"],
+							"type": "KYCAgeCredential",
+							"credentialSubject": {
+								"birthday": {
+									"$eq": 19960424
+								}
+							},
+							"proofType": "BJJSignature2021"
+						  }`),
+						},
+						{
+							CircuitId: "credentialAtomicQueryV3-beta.0",
+							Query: jsonToMap(t, `{
+							"context": "ipfs://QmaBJzpoYT2CViDx5ShJiuYLKXizrPEfXo8JqzrXCvG6oc",
+							"allowedIssuers": ["*"],
+							"type": "TestInteger01",
+							"credentialSubject": {
+								"position": {
+									"$eq": 1
+								}
+							},
+							"proofType": "BJJSignature2021"
+						  }`),
+						},
+					},
+				},
+			},
+			expected: expected{
+				httpCode: http.StatusOK,
+				SignInResponseObject: SignIn200JSONResponse{
+					QrCode: QRCode{
+						Body: Body{
+							Scope: []Scope{
+								{
+									CircuitId: "credentialAtomicQueryV3-beta.0",
+									Id:        0,
+									Query: map[string]interface{}{
+										"allowedIssuers": []interface{}{"*"},
+										"context":        "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+										"credentialSubject": map[string]interface{}{
+											"birthday": map[string]interface{}{
+												"$eq": float64(19960424),
+											},
+										},
+										"type":      "KYCAgeCredential",
+										"proofType": "BJJSignature2021",
+									},
+								},
+								{
+									CircuitId: "credentialAtomicQueryV3-beta.0",
+									Id:        1,
+									Query: map[string]interface{}{
+										"allowedIssuers": []interface{}{"*"},
+										"context":        "ipfs://QmaBJzpoYT2CViDx5ShJiuYLKXizrPEfXo8JqzrXCvG6oc",
+										"credentialSubject": map[string]interface{}{
+											"position": map[string]interface{}{
+												"$eq": float64(1),
+											},
+										},
+										"type":      "TestInteger01",
+										"proofType": "BJJSignature2021",
+									},
+								},
+							},
+						},
+						From: cfg.MumbaiSenderDID,
+						To:   nil,
+						Typ:  "application/iden3comm-plain-json",
+						Type: "https://iden3-communication.io/authorization/1.0/request",
+					},
+				},
+			},
+		},
+		{
+			name: "invalid request for credentialAtomicQueryV3-beta.0 and KYCAgeCredential circuits",
+			body: SignInRequestObject{
+				Body: &SignInJSONRequestBody{
+					ChainID: common.ToPointer("80001"),
+					Scope: []ScopeRequest{
+						{
+							CircuitId: "credentialAtomicQueryV3-beta.0",
+							Query: jsonToMap(t, `{
+							"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+							"allowedIssuers": ["*"],
+							"type": "KYCAgeCredential",
+							"credentialSubject": {
+								"birthday": {
+									"$eq": 19960424
+								}
+							},
+							"proofType": "BJJSignature2021"
+						  }`),
+						},
+						{
+							CircuitId: "credentialAtomicQuerySigV2OnChain",
+							Query: jsonToMap(t, `{
+							"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+							"allowedIssuers": ["*"],
+							"type": "KYCAgeCredential",
+							"credentialSubject": {
+								"birthday": {
+									"$eq": 19960424
+								}
+							},
+							"proofType": "BJJSignature2021"
+						  }`),
+						},
+					},
+				},
+			},
+			expected: expected{
+				httpCode: http.StatusBadRequest,
+				SignInResponseObject: SignIn400JSONResponse{
+					N400JSONResponse{
+						Message: "field circuitId value is wrong, got credentialAtomicQuerySigV2OnChain, expected credentialAtomicQuerySigV2 or credentialAtomicQueryMTPV2 or credentialAtomicQueryV3-beta.0",
+					},
+				},
+			},
+		},
+		{
+			name: "invalid request for credentialAtomicQueryV3-beta.0 and credentialAtomicQuerySigV2OnChain circuits",
+			body: SignInRequestObject{
+				Body: &SignInJSONRequestBody{
+					ChainID: common.ToPointer("80001"),
+					Scope: []ScopeRequest{
+						{
+							CircuitId: "credentialAtomicQuerySigV2OnChain",
+							Query: jsonToMap(t, `{
+							"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+							"allowedIssuers": ["*"],
+							"type": "KYCAgeCredential",
+							"credentialSubject": {
+								"birthday": {
+									"$eq": 19960424
+								}
+							},
+							"proofType": "BJJSignature2021"
+						  }`),
+						},
+						{
+							CircuitId: "credentialAtomicQueryV3-beta.0",
+							Query: jsonToMap(t, `{
+							"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+							"allowedIssuers": ["*"],
+							"type": "KYCAgeCredential",
+							"credentialSubject": {
+								"birthday": {
+									"$eq": 19960424
+								}
+							},
+							"proofType": "BJJSignature2021"
+						  }`),
+						},
+					},
+				},
+			},
+			expected: expected{
+				httpCode: http.StatusBadRequest,
+				SignInResponseObject: SignIn400JSONResponse{
+					N400JSONResponse{
+						Message: "field circuitId value is wrong, got credentialAtomicQueryV3-beta.0, expected credentialAtomicQuerySigV2OnChain or credentialAtomicQueryMTPV2OnChain",
+					},
+				},
+			},
+		},
+		{
 			name: "invalid request - invalid ChainID",
 			body: SignInRequestObject{
 				Body: &SignInJSONRequestBody{
-					ChainID:   common.ToPointer("invalid"),
-					CircuitID: "credentialAtomicQueryMTPV2",
+					ChainID: common.ToPointer("invalid"),
+					Scope: []ScopeRequest{
+						{
+							CircuitId: "credentialAtomicQueryV3-beta.0",
+							Query: jsonToMap(t, `{
+							"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+							"allowedIssuers": ["*"],
+							"type": "KYCAgeCredential",
+							"credentialSubject": {
+								"birthday": {
+									"$eq": 19960424
+								}
+							},
+							"proofType": "BJJSignature2021"
+						  }`),
+						},
+					},
 				},
 			},
 			expected: expected{
@@ -245,8 +451,23 @@ func TestSignIn(t *testing.T) {
 			name: "invalid request - invalid circuitID",
 			body: SignInRequestObject{
 				Body: &SignInJSONRequestBody{
-					ChainID:   common.ToPointer("80001"),
-					CircuitID: "invalid",
+					ChainID: common.ToPointer("80001"),
+					Scope: []ScopeRequest{
+						{
+							CircuitId: "credentialAtomicQueryV3-beta.1111",
+							Query: jsonToMap(t, `{
+							"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+							"allowedIssuers": ["*"],
+							"type": "KYCAgeCredential",
+							"credentialSubject": {
+								"birthday": {
+									"$eq": 19960424
+								}
+							},
+							"proofType": "BJJSignature2021"
+						  }`),
+						},
+					},
 				},
 			},
 			expected: expected{
@@ -262,11 +483,22 @@ func TestSignIn(t *testing.T) {
 			name: "invalid request - invalid query - no context",
 			body: SignInRequestObject{
 				Body: &SignInJSONRequestBody{
-					ChainID:   common.ToPointer("80001"),
-					CircuitID: "credentialAtomicQuerySigV2",
-					Query: jsonToMap(t, `{
-						
-					}`),
+					ChainID: common.ToPointer("80001"),
+					Scope: []ScopeRequest{
+						{
+							CircuitId: "credentialAtomicQueryV3-beta.0",
+							Query: jsonToMap(t, `{
+							"allowedIssuers": ["*"],
+							"type": "KYCAgeCredential",
+							"credentialSubject": {
+								"birthday": {
+									"$eq": 19960424
+								}
+							},
+							"proofType": "BJJSignature2021"
+						  }`),
+						},
+					},
 				},
 			},
 			expected: expected{
@@ -282,11 +514,23 @@ func TestSignIn(t *testing.T) {
 			name: "invalid request - invalid query - context empty",
 			body: SignInRequestObject{
 				Body: &SignInJSONRequestBody{
-					ChainID:   common.ToPointer("80001"),
-					CircuitID: "credentialAtomicQuerySigV2",
-					Query: jsonToMap(t, `{
-						"context": ""
-					}`),
+					ChainID: common.ToPointer("80001"),
+					Scope: []ScopeRequest{
+						{
+							CircuitId: "credentialAtomicQueryV3-beta.0",
+							Query: jsonToMap(t, `{
+							"context": "",
+							"allowedIssuers": ["*"],
+							"type": "KYCAgeCredential",
+							"credentialSubject": {
+								"birthday": {
+									"$eq": 19960424
+								}
+							},
+							"proofType": "BJJSignature2021"
+						  }`),
+						},
+					},
 				},
 			},
 			expected: expected{
@@ -302,11 +546,22 @@ func TestSignIn(t *testing.T) {
 			name: "invalid request - invalid query - no type",
 			body: SignInRequestObject{
 				Body: &SignInJSONRequestBody{
-					ChainID:   common.ToPointer("80001"),
-					CircuitID: "credentialAtomicQuerySigV2",
-					Query: jsonToMap(t, `{
-						"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld"
-					}`),
+					ChainID: common.ToPointer("80001"),
+					Scope: []ScopeRequest{
+						{
+							CircuitId: "credentialAtomicQueryV3-beta.0",
+							Query: jsonToMap(t, `{
+							"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+							"allowedIssuers": ["*"],
+							"credentialSubject": {
+								"birthday": {
+									"$eq": 19960424
+								}
+							},
+							"proofType": "BJJSignature2021"
+						  }`),
+						},
+					},
 				},
 			},
 			expected: expected{
@@ -322,19 +577,23 @@ func TestSignIn(t *testing.T) {
 			name: "invalid request - invalid transaction data",
 			body: SignInRequestObject{
 				Body: &SignInJSONRequestBody{
-					ChainID:   common.ToPointer("80001"),
-					CircuitID: "credentialAtomicQuerySigV2OnChain",
-					Query: jsonToMap(t, `{
-						"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
-						"allowedIssuers": ["*"],
-						"type": "KYCAgeCredential",
-						"credentialSubject": {
-							"birthday": {
-								"$eq": 19960424
-							}
+					ChainID: common.ToPointer("80001"),
+					Scope: []ScopeRequest{
+						{
+							CircuitId: "credentialAtomicQuerySigV2OnChain",
+							Query: jsonToMap(t, `{
+							"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+							"allowedIssuers": ["*"],
+							"type": "KYCAgeCredential",
+							"credentialSubject": {
+								"birthday": {
+									"$eq": 19960424
+								}
+							},
+							"proofType": "BJJSignature2021"
+						  }`),
 						},
-						"proofType": "BJJSignature2021"
-					  }`),
+					},
 				},
 			},
 			expected: expected{
@@ -354,19 +613,23 @@ func TestSignIn(t *testing.T) {
 						ChainID:         1234,
 						ContractAddress: "",
 					},
-					ChainID:   common.ToPointer("80001"),
-					CircuitID: "credentialAtomicQuerySigV2OnChain",
-					Query: jsonToMap(t, `{
-						"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
-						"allowedIssuers": ["*"],
-						"type": "KYCAgeCredential",
-						"credentialSubject": {
-							"birthday": {
-								"$eq": 19960424
-							}
+					ChainID: common.ToPointer("80001"),
+					Scope: []ScopeRequest{
+						{
+							CircuitId: "credentialAtomicQuerySigV2OnChain",
+							Query: jsonToMap(t, `{
+							"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+							"allowedIssuers": ["*"],
+							"type": "KYCAgeCredential",
+							"credentialSubject": {
+								"birthday": {
+									"$eq": 19960424
+								}
+							},
+							"proofType": "BJJSignature2021"
+						  }`),
 						},
-						"proofType": "BJJSignature2021"
-					  }`),
+					},
 				},
 			},
 			expected: expected{
@@ -388,19 +651,23 @@ func TestSignIn(t *testing.T) {
 						MethodID:        "123",
 						Network:         mumbaiNetwork,
 					},
-					ChainID:   common.ToPointer("80001"),
-					CircuitID: "credentialAtomicQuerySigV2OnChain",
-					Query: jsonToMap(t, `{
-						"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
-						"allowedIssuers": ["*"],
-						"type": "KYCAgeCredential",
-						"credentialSubject": {
-							"birthday": {
-								"$eq": 19960424
-							}
+					ChainID: common.ToPointer("80001"),
+					Scope: []ScopeRequest{
+						{
+							CircuitId: "credentialAtomicQuerySigV2OnChain",
+							Query: jsonToMap(t, `{
+							"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+							"allowedIssuers": ["*"],
+							"type": "KYCAgeCredential",
+							"credentialSubject": {
+								"birthday": {
+									"$eq": 19960424
+								}
+							},
+							"proofType": "BJJSignature2021"
+						  }`),
 						},
-						"proofType": "BJJSignature2021"
-					  }`),
+					},
 				},
 			},
 			expected: expected{
@@ -411,7 +678,7 @@ func TestSignIn(t *testing.T) {
 							Scope: []Scope{
 								{
 									CircuitId: "credentialAtomicQuerySigV2OnChain",
-									Id:        1,
+									Id:        0,
 									Query: map[string]interface{}{
 										"allowedIssuers": []interface{}{"*"},
 										"context":        "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
@@ -438,12 +705,23 @@ func TestSignIn(t *testing.T) {
 			name: "invalid request - invalid query onchain - empty type",
 			body: SignInRequestObject{
 				Body: &SignInJSONRequestBody{
-					ChainID:   common.ToPointer("80001"),
-					CircuitID: "credentialAtomicQuerySigV2OnChain",
-					Query: jsonToMap(t, `{
-						"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
-						"type": ""
-					}`),
+					ChainID: common.ToPointer("80001"),
+					Scope: []ScopeRequest{
+						{
+							CircuitId: "credentialAtomicQuerySigV2OnChain",
+							Query: jsonToMap(t, `{
+							"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+							"allowedIssuers": ["*"],
+							"type": "",
+							"credentialSubject": {
+								"birthday": {
+									"$eq": 19960424
+								}
+							},
+							"proofType": "BJJSignature2021"
+						  }`),
+						},
+					},
 				},
 			},
 			expected: expected{
@@ -459,12 +737,23 @@ func TestSignIn(t *testing.T) {
 			name: "invalid request - invalid query - empty type",
 			body: SignInRequestObject{
 				Body: &SignInJSONRequestBody{
-					ChainID:   common.ToPointer("80001"),
-					CircuitID: "credentialAtomicQuerySigV2",
-					Query: jsonToMap(t, `{
-						"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
-						"type": ""
-					}`),
+					ChainID: common.ToPointer("80001"),
+					Scope: []ScopeRequest{
+						{
+							CircuitId: "credentialAtomicQuerySigV2",
+							Query: jsonToMap(t, `{
+							"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+							"allowedIssuers": ["*"],
+							"type": "",
+							"credentialSubject": {
+								"birthday": {
+									"$eq": 19960424
+								}
+							},
+							"proofType": "BJJSignature2021"
+						  }`),
+						},
+					},
 				},
 			},
 			expected: expected{
@@ -480,12 +769,22 @@ func TestSignIn(t *testing.T) {
 			name: "invalid request - invalid query - no allowedIssuers",
 			body: SignInRequestObject{
 				Body: &SignInJSONRequestBody{
-					ChainID:   common.ToPointer("80001"),
-					CircuitID: "credentialAtomicQuerySigV2",
-					Query: jsonToMap(t, `{
-						"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
-						"type": "KYCAgeCredential"
-					}`),
+					ChainID: common.ToPointer("80001"),
+					Scope: []ScopeRequest{
+						{
+							CircuitId: "credentialAtomicQuerySigV2",
+							Query: jsonToMap(t, `{
+							"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+							"type": "KYCAgeCredential",
+							"credentialSubject": {
+								"birthday": {
+									"$eq": 19960424
+								}
+							},
+							"proofType": "BJJSignature2021"
+						  }`),
+						},
+					},
 				},
 			},
 			expected: expected{
@@ -501,13 +800,18 @@ func TestSignIn(t *testing.T) {
 			name: "invalid request - invalid query - no credentialSubject",
 			body: SignInRequestObject{
 				Body: &SignInJSONRequestBody{
-					ChainID:   common.ToPointer("80001"),
-					CircuitID: "credentialAtomicQuerySigV2",
-					Query: jsonToMap(t, `{
-						"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
-						"type": "KYCAgeCredential",
-						"allowedIssuers": ["*"]
-					}`),
+					ChainID: common.ToPointer("80001"),
+					Scope: []ScopeRequest{
+						{
+							CircuitId: "credentialAtomicQuerySigV2",
+							Query: jsonToMap(t, `{
+							"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+							"allowedIssuers": ["*"],
+							"type": "KYCAgeCredential",
+							"proofType": "BJJSignature2021"
+						  }`),
+						},
+					},
 				},
 			},
 			expected: expected{
@@ -530,7 +834,7 @@ func TestSignIn(t *testing.T) {
 				expected, ok := tc.expected.SignInResponseObject.(SignIn200JSONResponse)
 				require.True(t, ok)
 				require.NotNil(t, expected.QrCode.Body.Scope)
-				require.Len(t, expected.QrCode.Body.Scope, 1)
+				require.Len(t, expected.QrCode.Body.Scope, len(response.QrCode.Body.Scope))
 				require.Equal(t, expected.QrCode.Body.Scope, response.QrCode.Body.Scope)
 				if expected.QrCode.Body.Scope[0].CircuitId == "credentialAtomicQuerySigV2" || expected.QrCode.Body.Scope[0].CircuitId == "credentialAtomicQueryMTPV2" || expected.QrCode.Body.Scope[0].CircuitId == "credentialAtomicQueryV3-beta.0" {
 					require.NotNil(t, response.QrCode.Body.CallbackUrl)

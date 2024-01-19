@@ -55,40 +55,43 @@ paths:
                   value:
                     {
                       "chainID": "80001",
-                      "circuitID": "credentialAtomicQuerySigV2",
-                      "reason": "test flow",
-                      "to": null,
-                      "query": {
-                        "context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
-                        "allowedIssuers": [
-                          "*"
-                        ],
-                        "type": "KYCAgeCredential",
-                        "credentialSubject": {
-                          "birthday": {
-                            "$lt": 20200424
+                      "skipClaimRevocationCheck": false,
+                      "scope": [
+                        {
+                          "circuitID": "credentialAtomicQuerySigV2",
+                          "query": {
+                            "context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+                            "allowedIssuers": [ "*" ],
+                            "type": "KYCAgeCredential",
+                            "credentialSubject": {
+                              "birthday": {
+                                "$eq": 19960424
+                              }
+                            }
                           }
                         }
-                      }
+                      ]
                     }
                 OnChain:
                   value:
                     {
-                      "circuitID": "credentialAtomicQuerySigV2OnChain",
-                      "reason": "test flow",
-                      "to": null,
-                      "query": {
-                        "context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
-                        "allowedIssuers": [
-                          "*"
-                        ],
-                        "type": "KYCAgeCredential",
-                        "credentialSubject": {
-                          "birthday": {
-                            "$lt": 20020101
+                      "chainID": "80001",
+                      "skipClaimRevocationCheck": false,
+                      "scope": [
+                        {
+                          "circuitID": "credentialAtomicQuerySigV2",
+                          "query": {
+                            "context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+                            "allowedIssuers": [ "*" ],
+                            "type": "KYCAgeCredential",
+                            "credentialSubject": {
+                              "birthday": {
+                                "$eq": 19960424
+                              }
+                            }
                           }
                         }
-                      },
+                      ],
                       "transactionData": {
                         "contractAddress": "0xE826f870852D7eeeB79B2C030298f9B5DAA8C8a3",
                         "methodID": "b68967e2",
@@ -345,26 +348,39 @@ components:
           example: 'credentialAtomicQuerySigV2'
         query:
           $ref: '#/components/schemas/Query'
+      example:
+        {
+          "circuitID": "credentialAtomicQuerySigV2",
+          "query": {
+            "context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+            "allowedIssuers": [ "*" ],
+            "type": "KYCAgeCredential",
+            "credentialSubject": {
+              "birthday": {
+                "$eq": 19960424
+              }
+            }
+          }
+        }
 
     Query:
       type: object
       example:
         {
-             "context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
-             "allowedIssuers": ["*"],
-             "type": "KYCAgeCredential",
-             "credentialSubject": {
-                 "birthday": {
-                     "$lt": 20200424
-                 }
-             }
+           "context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+           "allowedIssuers": ["*"],
+           "type": "KYCAgeCredential",
+           "credentialSubject": {
+               "birthday": {
+                   "$lt": 20200424
+               }
            }
+        }
 
     SignInRequest:
       type: object
       required:
-        - query
-        - circuitID
+        - scope
       properties:
         chainID:
           type: string
@@ -373,19 +389,31 @@ components:
             `80001`: `mumbai`
             `137` : `mainnet`
           example: '80001'
-        circuitID:
-          type: string
-          example: 'credentialAtomicQuerySigV2'
         reason:
           type: string
           example: 'test flow'
         to:
           type: string
           example: null
-        query:
-          $ref : '#/components/schemas/Query'
+        scope:
+          type: array
+          items:
+            $ref: '#/components/schemas/ScopeRequest'
         transactionData:
           $ref : '#/components/schemas/TransactionData'
+
+    ScopeRequest:
+      type: object
+      required:
+        - circuitId
+        - query
+      properties:
+        circuitId:
+          type: string
+          example: 'credentialAtomicQuerySigV2'
+        query:
+          $ref: '#/components/schemas/Query'
+
 
     TransactionDataResponse:
       type: object

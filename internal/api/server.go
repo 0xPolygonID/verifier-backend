@@ -219,7 +219,12 @@ func (s *Server) QRStore(ctx context.Context, request QRStoreRequestObject) (QRS
 func (s *Server) SignIn(_ context.Context, request SignInRequestObject) (SignInResponseObject, error) {
 	sessionID := uuid.New()
 
-	switch request.Body.CircuitID {
+	if len(request.Body.Scope) == 0 {
+		log.Error("field scope is empty")
+		return SignIn400JSONResponse{N400JSONResponse{Message: "field scope is empty"}}, nil
+	}
+
+	switch request.Body.Scope[0].CircuitId {
 	case "credentialAtomicQuerySigV2", "credentialAtomicQueryMTPV2", "credentialAtomicQueryV3-beta.0":
 		authReq, err := getAuthRequestOffChain(request, s.cfg, sessionID)
 		if err != nil {
@@ -243,7 +248,7 @@ func (s *Server) SignIn(_ context.Context, request SignInRequestObject) (SignInR
 			SessionID: sessionID,
 		}, nil
 	default:
-		log.Errorf("invalid circuitID: %s", request.Body.CircuitID)
+		log.Errorf("invalid circuitID: %s", request.Body.Scope[0].CircuitId)
 		return SignIn400JSONResponse{N400JSONResponse{Message: "invalid circuitID"}}, nil
 	}
 }
@@ -410,32 +415,50 @@ func validateOffChainRequest(request SignInRequestObject) error {
 		return fmt.Errorf("field chainId value is wrong, got %s, expected %s or %s", *request.Body.ChainID, mumbaiNetwork, mainnetNetwork)
 	}
 
-	if err := validateRequestQuery(request.Body.Query); err != nil {
+	if err := validateRequestQuery(true, request.Body.Scope); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func validateRequestQuery(query map[string]interface{}) error {
-	if query == nil {
-		return errors.New("field query is empty")
-	}
+func validateRequestQuery(offChainRequest bool, scope []ScopeRequest) error {
+	for _, scope := range scope {
+		if scope.CircuitId == "" {
+			return errors.New("field circuitId is empty")
+		}
 
-	if query["context"] == nil || query["context"] == "" {
-		return errors.New("context cannot be empty")
-	}
+		if offChainRequest {
+			if scope.CircuitId != "credentialAtomicQuerySigV2" && scope.CircuitId != "credentialAtomicQueryMTPV2" && scope.CircuitId != "credentialAtomicQueryV3-beta.0" {
+				return fmt.Errorf("field circuitId value is wrong, got %s, expected credentialAtomicQuerySigV2 or credentialAtomicQueryMTPV2 or credentialAtomicQueryV3-beta.0", scope.CircuitId)
+			}
+		}
 
-	if query["type"] == nil || query["type"] == "" {
-		return errors.New("type cannot be empty")
-	}
+		if !offChainRequest {
+			if scope.CircuitId != "credentialAtomicQuerySigV2OnChain" && scope.CircuitId != "credentialAtomicQueryMTPV2OnChain" {
+				return fmt.Errorf("field circuitId value is wrong, got %s, expected credentialAtomicQuerySigV2OnChain or credentialAtomicQueryMTPV2OnChain", scope.CircuitId)
+			}
+		}
 
-	if query["allowedIssuers"] == nil {
-		return errors.New("allowedIssuers cannot be empty")
-	}
+		if scope.Query == nil {
+			return errors.New("field query is empty")
+		}
 
-	if query["credentialSubject"] == nil {
-		return errors.New("credentialSubject cannot be empty")
+		if scope.Query["context"] == nil || scope.Query["context"] == "" {
+			return errors.New("context cannot be empty")
+		}
+
+		if scope.Query["type"] == nil || scope.Query["type"] == "" {
+			return errors.New("type cannot be empty")
+		}
+
+		if scope.Query["allowedIssuers"] == nil {
+			return errors.New("allowedIssuers cannot be empty")
+		}
+
+		if scope.Query["credentialSubject"] == nil {
+			return errors.New("credentialSubject cannot be empty")
+		}
 	}
 
 	return nil
@@ -455,18 +478,19 @@ func getAuthRequestOffChain(req SignInRequestObject, cfg config.Config, sessionI
 		authReq.To = *req.Body.To
 	}
 
-	mtpProofRequest := protocol.ZeroKnowledgeProofRequest{
-		ID:        uint32(1),
-		CircuitID: req.Body.CircuitID,
-		Query:     req.Body.Query,
+	for i, scope := range req.Body.Scope {
+		mtpProofRequest := protocol.ZeroKnowledgeProofRequest{
+			ID:        uint32(i),
+			CircuitID: scope.CircuitId,
+			Query:     scope.Query,
+		}
+		authReq.Body.Scope = append(authReq.Body.Scope, mtpProofRequest)
 	}
-	authReq.Body.Scope = append(authReq.Body.Scope, mtpProofRequest)
-
 	return authReq, nil
 }
 
 func checkOnChainRequest(req SignInRequestObject) error {
-	if err := validateRequestQuery(req.Body.Query); err != nil {
+	if err := validateRequestQuery(false, req.Body.Scope); err != nil {
 		return err
 	}
 
@@ -498,11 +522,16 @@ func getContractInvokeRequestOnChain(req SignInRequestObject, cfg config.Config)
 		return protocol.ContractInvokeRequestMessage{}, err
 	}
 
-	mtpProofRequest := protocol.ZeroKnowledgeProofRequest{
-		ID:        uint32(1),
-		CircuitID: req.Body.CircuitID,
-		Query:     req.Body.Query,
+	mtpProofRequests := make([]protocol.ZeroKnowledgeProofRequest, len(req.Body.Scope))
+	for i, scope := range req.Body.Scope {
+		mtpProofRequest := protocol.ZeroKnowledgeProofRequest{
+			ID:        uint32(i),
+			CircuitID: scope.CircuitId,
+			Query:     scope.Query,
+		}
+		mtpProofRequests[i] = mtpProofRequest
 	}
+
 	transactionData := protocol.TransactionData{
 		ContractAddress: req.Body.TransactionData.ContractAddress,
 		MethodID:        req.Body.TransactionData.MethodID,
@@ -510,7 +539,7 @@ func getContractInvokeRequestOnChain(req SignInRequestObject, cfg config.Config)
 		Network:         req.Body.TransactionData.Network,
 	}
 	id := uuid.NewString()
-	authReq := auth.CreateContractInvokeRequest(getReason(req.Body.Reason), getSenderID(strconv.Itoa(transactionData.ChainID), cfg), transactionData, mtpProofRequest)
+	authReq := auth.CreateContractInvokeRequest(getReason(req.Body.Reason), getSenderID(strconv.Itoa(transactionData.ChainID), cfg), transactionData, mtpProofRequests...)
 	authReq.ID = id
 	authReq.ThreadID = id
 	authReq.To = ""

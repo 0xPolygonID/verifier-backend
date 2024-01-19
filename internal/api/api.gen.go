@@ -64,16 +64,21 @@ type Scope struct {
 	Query     Query  `json:"query"`
 }
 
+// ScopeRequest defines model for ScopeRequest.
+type ScopeRequest struct {
+	CircuitId string `json:"circuitId"`
+	Query     Query  `json:"query"`
+}
+
 // SignInRequest defines model for SignInRequest.
 type SignInRequest struct {
 	// ChainID Only required when using off-chain verification
 	// `80001`: `mumbai`
 	// `137` : `mainnet`
-	ChainID   *string `json:"chainID,omitempty"`
-	CircuitID string  `json:"circuitID"`
-	Query     Query   `json:"query"`
-	Reason    *string `json:"reason,omitempty"`
-	To        *string `json:"to,omitempty"`
+	ChainID *string        `json:"chainID,omitempty"`
+	Reason  *string        `json:"reason,omitempty"`
+	Scope   []ScopeRequest `json:"scope"`
+	To      *string        `json:"to,omitempty"`
 
 	// TransactionData Only required when using on-chain verification
 	TransactionData *TransactionData `json:"transactionData,omitempty"`
