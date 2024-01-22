@@ -470,6 +470,7 @@ func validateRequestQuery(offChainRequest bool, scope []ScopeRequest) error {
 }
 
 func getAuthRequestOffChain(req SignInRequestObject, cfg config.Config, sessionID uuid.UUID) (protocol.AuthorizationRequestMessage, error) {
+	const defaultBigIntBase = 10
 	if err := validateOffChainRequest(req); err != nil {
 		return protocol.AuthorizationRequestMessage{}, err
 	}
@@ -496,7 +497,7 @@ func getAuthRequestOffChain(req SignInRequestObject, cfg config.Config, sessionI
 				return protocol.AuthorizationRequestMessage{}, errors.New("nullifierSessionId is empty")
 			}
 			nullifierSessionID := new(big.Int)
-			if _, ok := nullifierSessionID.SetString(val.(string), 10); !ok {
+			if _, ok := nullifierSessionID.SetString(val.(string), defaultBigIntBase); !ok {
 				return protocol.AuthorizationRequestMessage{}, errors.New("nullifierSessionId is not a valid big integer")
 			}
 			mtpProofRequest.Params = *scope.Params
