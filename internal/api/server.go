@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math/big"
 	"net/http"
 	"os"
 	"strconv"
@@ -346,11 +347,15 @@ func (s *Server) parseResolverSettings() map[string]pubsignals.StateResolver {
 func getAuthReqQRCode(request protocol.AuthorizationRequestMessage) QRCode {
 	scopes := make([]Scope, 0, len(request.Body.Scope))
 	for _, scope := range request.Body.Scope {
-		scopes = append(scopes, Scope{
+		sc := Scope{
 			CircuitId: scope.CircuitID,
 			Id:        int(scope.ID),
 			Query:     scope.Query,
-		})
+		}
+		if scope.Params != nil {
+			sc.Params = common.ToPointer(scope.Params)
+		}
+		scopes = append(scopes, sc)
 	}
 
 	qrCode := QRCode{
@@ -483,6 +488,18 @@ func getAuthRequestOffChain(req SignInRequestObject, cfg config.Config, sessionI
 			ID:        uint32(i),
 			CircuitID: scope.CircuitId,
 			Query:     scope.Query,
+		}
+		if scope.Params != nil {
+			params := *scope.Params
+			val, ok := params["nullifierSessionId"]
+			if !ok {
+				return protocol.AuthorizationRequestMessage{}, errors.New("nullifierSessionId is empty")
+			}
+			nullifierSessionID := new(big.Int)
+			if _, ok := nullifierSessionID.SetString(val.(string), 10); !ok {
+				return protocol.AuthorizationRequestMessage{}, errors.New("nullifierSessionId is not a valid big integer")
+			}
+			mtpProofRequest.Params = *scope.Params
 		}
 		authReq.Body.Scope = append(authReq.Body.Scope, mtpProofRequest)
 	}

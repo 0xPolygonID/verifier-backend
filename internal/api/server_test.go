@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"math/big"
 	"net/http"
 	"strings"
 	"testing"
@@ -241,6 +242,66 @@ func TestSignIn(t *testing.T) {
 			},
 		},
 		{
+			name: "valid request for credentialAtomicQueryV3-beta.0 circuit with KYCAgeCredential and nullifierSessionId",
+			body: SignInRequestObject{
+				Body: &SignInJSONRequestBody{
+					ChainID: common.ToPointer("80001"),
+					Scope: []ScopeRequest{
+						{
+							CircuitId: "credentialAtomicQueryV3-beta.0",
+							Query: jsonToMap(t, `{
+							"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+							"allowedIssuers": ["*"],
+							"type": "KYCAgeCredential",
+							"credentialSubject": {
+								"birthday": {
+									"$eq": 19960424
+								}
+							},
+							"proofType": "BJJSignature2021"
+						  }`),
+							Params: common.ToPointer(map[string]interface{}{
+								"nullifierSessionId": big.NewInt(100).String(),
+							}),
+						},
+					},
+				},
+			},
+			expected: expected{
+				httpCode: http.StatusOK,
+				SignInResponseObject: SignIn200JSONResponse{
+					QrCode: QRCode{
+						Body: Body{
+							Scope: []Scope{
+								{
+									CircuitId: "credentialAtomicQueryV3-beta.0",
+									Id:        0,
+									Query: map[string]interface{}{
+										"allowedIssuers": []interface{}{"*"},
+										"context":        "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+										"credentialSubject": map[string]interface{}{
+											"birthday": map[string]interface{}{
+												"$eq": float64(19960424),
+											},
+										},
+										"type":      "KYCAgeCredential",
+										"proofType": "BJJSignature2021",
+									},
+									Params: common.ToPointer(map[string]interface{}{
+										"nullifierSessionId": big.NewInt(100).String(),
+									}),
+								},
+							},
+						},
+						From: cfg.MumbaiSenderDID,
+						To:   nil,
+						Typ:  "application/iden3comm-plain-json",
+						Type: "https://iden3-communication.io/authorization/1.0/request",
+					},
+				},
+			},
+		},
+		{
 			name: "valid request for credentialAtomicQueryV3-beta.0 and TestInteger01 circuits",
 			body: SignInRequestObject{
 				Body: &SignInJSONRequestBody{
@@ -411,6 +472,41 @@ func TestSignIn(t *testing.T) {
 				SignInResponseObject: SignIn400JSONResponse{
 					N400JSONResponse{
 						Message: "field circuitId value is wrong, got credentialAtomicQueryV3-beta.0, expected credentialAtomicQuerySigV2OnChain or credentialAtomicQueryMTPV2OnChain",
+					},
+				},
+			},
+		},
+		{
+			name: "invalid request - invalid params",
+			body: SignInRequestObject{
+				Body: &SignInJSONRequestBody{
+					ChainID: common.ToPointer("80001"),
+					Scope: []ScopeRequest{
+						{
+							CircuitId: "credentialAtomicQueryV3-beta.0",
+							Query: jsonToMap(t, `{
+							"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+							"allowedIssuers": ["*"],
+							"type": "KYCAgeCredential",
+							"credentialSubject": {
+								"birthday": {
+									"$eq": 19960424
+								}
+							},
+							"proofType": "BJJSignature2021"
+						  }`),
+							Params: common.ToPointer(map[string]interface{}{
+								"nullifierSessionId": "invalid",
+							}),
+						},
+					},
+				},
+			},
+			expected: expected{
+				httpCode: http.StatusBadRequest,
+				SignInResponseObject: SignIn400JSONResponse{
+					N400JSONResponse{
+						Message: "nullifierSessionId is not a valid big integer",
 					},
 				},
 			},
@@ -839,6 +935,9 @@ func TestSignIn(t *testing.T) {
 				if expected.QrCode.Body.Scope[0].CircuitId == "credentialAtomicQuerySigV2" || expected.QrCode.Body.Scope[0].CircuitId == "credentialAtomicQueryMTPV2" || expected.QrCode.Body.Scope[0].CircuitId == "credentialAtomicQueryV3-beta.0" {
 					require.NotNil(t, response.QrCode.Body.CallbackUrl)
 					assert.True(t, isValidCallBack(t, *response.QrCode.Body.CallbackUrl))
+					if expected.QrCode.Body.Scope[0].Params != nil {
+						assert.Equal(t, expected.QrCode.Body.Scope[0].Params, response.QrCode.Body.Scope[0].Params)
+					}
 				}
 				assert.Equal(t, expected.QrCode.From, response.QrCode.From)
 				assert.Equal(t, expected.QrCode.Typ, response.QrCode.Typ)
