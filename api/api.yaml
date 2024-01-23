@@ -404,20 +404,6 @@ components:
         transactionData:
           $ref : '#/components/schemas/TransactionData'
 
-    ScopeRequest:
-      type: object
-      required:
-        - circuitId
-        - query
-      properties:
-        circuitId:
-          type: string
-          example: 'credentialAtomicQuerySigV2'
-        query:
-          $ref: '#/components/schemas/Query'
-        params:
-          $ref: '#/components/schemas/ScopeParams'
-
     ScopeParams:
       type: object
       example:

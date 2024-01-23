@@ -70,13 +70,6 @@ type ScopeParams = map[string]interface{}
 
 // ScopeRequest defines model for ScopeRequest.
 type ScopeRequest struct {
-	CircuitId string       `json:"circuitId"`
-	Params    *ScopeParams `json:"params,omitempty"`
-	Query     Query        `json:"query"`
-}
-
-// ScopeRequest defines model for ScopeRequest.
-type ScopeRequest struct {
 	CircuitId string `json:"circuitId"`
 	Query     Query  `json:"query"`
 }
