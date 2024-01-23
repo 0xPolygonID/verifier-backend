@@ -423,6 +423,8 @@ components:
           example: 'credentialAtomicQuerySigV2'
         query:
           $ref: '#/components/schemas/Query'
+        params:
+          $ref: '#/components/schemas/ScopeParams'
 
 
     TransactionDataResponse:
