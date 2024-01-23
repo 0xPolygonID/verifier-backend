@@ -348,7 +348,7 @@ func getAuthReqQRCode(request protocol.AuthorizationRequestMessage) QRCode {
 	for _, scope := range request.Body.Scope {
 		scopes = append(scopes, Scope{
 			CircuitId: scope.CircuitID,
-			Id:        int(scope.ID),
+			Id:        scope.ID,
 			Query:     scope.Query,
 		})
 	}
@@ -377,7 +377,7 @@ func getInvokeContractQRCode(request protocol.ContractInvokeRequestMessage) QRCo
 	for _, scope := range request.Body.Scope {
 		scopes = append(scopes, Scope{
 			CircuitId: scope.CircuitID,
-			Id:        int(scope.ID),
+			Id:        scope.ID,
 			Query:     scope.Query,
 		})
 	}
@@ -424,6 +424,10 @@ func validateOffChainRequest(request SignInRequestObject) error {
 
 func validateRequestQuery(offChainRequest bool, scope []ScopeRequest) error {
 	for _, scope := range scope {
+		if scope.Id <= 0 {
+			return errors.New("field scope id is empty")
+		}
+
 		if scope.CircuitId == "" {
 			return errors.New("field circuitId is empty")
 		}
@@ -478,9 +482,9 @@ func getAuthRequestOffChain(req SignInRequestObject, cfg config.Config, sessionI
 		authReq.To = *req.Body.To
 	}
 
-	for i, scope := range req.Body.Scope {
+	for _, scope := range req.Body.Scope {
 		mtpProofRequest := protocol.ZeroKnowledgeProofRequest{
-			ID:        uint32(i),
+			ID:        scope.Id,
 			CircuitID: scope.CircuitId,
 			Query:     scope.Query,
 		}
@@ -522,14 +526,13 @@ func getContractInvokeRequestOnChain(req SignInRequestObject, cfg config.Config)
 		return protocol.ContractInvokeRequestMessage{}, err
 	}
 
-	mtpProofRequests := make([]protocol.ZeroKnowledgeProofRequest, len(req.Body.Scope))
-	for i, scope := range req.Body.Scope {
-		mtpProofRequest := protocol.ZeroKnowledgeProofRequest{
-			ID:        uint32(i),
+	mtpProofRequests := make([]protocol.ZeroKnowledgeProofRequest, 0, len(req.Body.Scope))
+	for _, scope := range req.Body.Scope {
+		mtpProofRequests = append(mtpProofRequests, protocol.ZeroKnowledgeProofRequest{
+			ID:        scope.Id,
 			CircuitID: scope.CircuitId,
 			Query:     scope.Query,
-		}
-		mtpProofRequests[i] = mtpProofRequest
+		})
 	}
 
 	transactionData := protocol.TransactionData{

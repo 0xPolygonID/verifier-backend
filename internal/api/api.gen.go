@@ -60,13 +60,14 @@ type Query = map[string]interface{}
 // Scope defines model for Scope.
 type Scope struct {
 	CircuitId string `json:"circuitId"`
-	Id        int    `json:"id"`
+	Id        uint32 `json:"id"`
 	Query     Query  `json:"query"`
 }
 
 // ScopeRequest defines model for ScopeRequest.
 type ScopeRequest struct {
 	CircuitId string `json:"circuitId"`
+	Id        uint32 `json:"id"`
 	Query     Query  `json:"query"`
 }
 

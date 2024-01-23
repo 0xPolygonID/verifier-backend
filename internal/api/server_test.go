@@ -37,6 +37,7 @@ func TestSignIn(t *testing.T) {
 					Scope: []ScopeRequest{
 						{
 							CircuitId: "credentialAtomicQuerySigV2",
+							Id:        1,
 							Query: jsonToMap(t, `{
 								"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
 								"allowedIssuers": ["*"],
@@ -59,7 +60,7 @@ func TestSignIn(t *testing.T) {
 							Scope: []Scope{
 								{
 									CircuitId: "credentialAtomicQuerySigV2",
-									Id:        0,
+									Id:        1,
 									Query: map[string]interface{}{
 										"allowedIssuers": []interface{}{"*"},
 										"context":        "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
@@ -89,6 +90,7 @@ func TestSignIn(t *testing.T) {
 					Scope: []ScopeRequest{
 						{
 							CircuitId: "credentialAtomicQuerySigV2",
+							Id:        1,
 							Query: jsonToMap(t, `{
 							"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
 							"allowedIssuers": ["*"],
@@ -112,7 +114,7 @@ func TestSignIn(t *testing.T) {
 							Scope: []Scope{
 								{
 									CircuitId: "credentialAtomicQuerySigV2",
-									Id:        0,
+									Id:        1,
 									Query: map[string]interface{}{
 										"allowedIssuers": []interface{}{"*"},
 										"context":        "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
@@ -141,6 +143,7 @@ func TestSignIn(t *testing.T) {
 					ChainID: common.ToPointer("80001"),
 					Scope: []ScopeRequest{
 						{
+							Id:        1,
 							CircuitId: "credentialAtomicQueryMTPV2",
 							Query: jsonToMap(t, `{
 							"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
@@ -164,7 +167,7 @@ func TestSignIn(t *testing.T) {
 							Scope: []Scope{
 								{
 									CircuitId: "credentialAtomicQueryMTPV2",
-									Id:        0,
+									Id:        1,
 									Query: map[string]interface{}{
 										"allowedIssuers": []interface{}{"*"},
 										"context":        "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
@@ -194,6 +197,7 @@ func TestSignIn(t *testing.T) {
 					Scope: []ScopeRequest{
 						{
 							CircuitId: "credentialAtomicQueryV3-beta.0",
+							Id:        1,
 							Query: jsonToMap(t, `{
 							"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
 							"allowedIssuers": ["*"],
@@ -217,7 +221,7 @@ func TestSignIn(t *testing.T) {
 							Scope: []Scope{
 								{
 									CircuitId: "credentialAtomicQueryV3-beta.0",
-									Id:        0,
+									Id:        1,
 									Query: map[string]interface{}{
 										"allowedIssuers": []interface{}{"*"},
 										"context":        "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
@@ -248,6 +252,7 @@ func TestSignIn(t *testing.T) {
 					Scope: []ScopeRequest{
 						{
 							CircuitId: "credentialAtomicQueryV3-beta.0",
+							Id:        1,
 							Query: jsonToMap(t, `{
 							"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
 							"allowedIssuers": ["*"],
@@ -262,6 +267,7 @@ func TestSignIn(t *testing.T) {
 						},
 						{
 							CircuitId: "credentialAtomicQueryV3-beta.0",
+							Id:        1,
 							Query: jsonToMap(t, `{
 							"context": "ipfs://QmaBJzpoYT2CViDx5ShJiuYLKXizrPEfXo8JqzrXCvG6oc",
 							"allowedIssuers": ["*"],
@@ -285,7 +291,7 @@ func TestSignIn(t *testing.T) {
 							Scope: []Scope{
 								{
 									CircuitId: "credentialAtomicQueryV3-beta.0",
-									Id:        0,
+									Id:        1,
 									Query: map[string]interface{}{
 										"allowedIssuers": []interface{}{"*"},
 										"context":        "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
@@ -331,6 +337,7 @@ func TestSignIn(t *testing.T) {
 					Scope: []ScopeRequest{
 						{
 							CircuitId: "credentialAtomicQueryV3-beta.0",
+							Id:        1,
 							Query: jsonToMap(t, `{
 							"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
 							"allowedIssuers": ["*"],
@@ -344,6 +351,7 @@ func TestSignIn(t *testing.T) {
 						  }`),
 						},
 						{
+							Id:        2,
 							CircuitId: "credentialAtomicQuerySigV2OnChain",
 							Query: jsonToMap(t, `{
 							"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
@@ -377,6 +385,7 @@ func TestSignIn(t *testing.T) {
 					Scope: []ScopeRequest{
 						{
 							CircuitId: "credentialAtomicQuerySigV2OnChain",
+							Id:        1,
 							Query: jsonToMap(t, `{
 							"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
 							"allowedIssuers": ["*"],
@@ -390,6 +399,7 @@ func TestSignIn(t *testing.T) {
 						  }`),
 						},
 						{
+							Id:        2,
 							CircuitId: "credentialAtomicQueryV3-beta.0",
 							Query: jsonToMap(t, `{
 							"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
@@ -486,6 +496,7 @@ func TestSignIn(t *testing.T) {
 					ChainID: common.ToPointer("80001"),
 					Scope: []ScopeRequest{
 						{
+							Id:        1,
 							CircuitId: "credentialAtomicQueryV3-beta.0",
 							Query: jsonToMap(t, `{
 							"allowedIssuers": ["*"],
@@ -517,6 +528,7 @@ func TestSignIn(t *testing.T) {
 					ChainID: common.ToPointer("80001"),
 					Scope: []ScopeRequest{
 						{
+							Id:        1,
 							CircuitId: "credentialAtomicQueryV3-beta.0",
 							Query: jsonToMap(t, `{
 							"context": "",
@@ -549,6 +561,7 @@ func TestSignIn(t *testing.T) {
 					ChainID: common.ToPointer("80001"),
 					Scope: []ScopeRequest{
 						{
+							Id:        1,
 							CircuitId: "credentialAtomicQueryV3-beta.0",
 							Query: jsonToMap(t, `{
 							"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
@@ -581,6 +594,7 @@ func TestSignIn(t *testing.T) {
 					Scope: []ScopeRequest{
 						{
 							CircuitId: "credentialAtomicQuerySigV2OnChain",
+							Id:        1,
 							Query: jsonToMap(t, `{
 							"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
 							"allowedIssuers": ["*"],
@@ -617,6 +631,7 @@ func TestSignIn(t *testing.T) {
 					Scope: []ScopeRequest{
 						{
 							CircuitId: "credentialAtomicQuerySigV2OnChain",
+							Id:        2,
 							Query: jsonToMap(t, `{
 							"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
 							"allowedIssuers": ["*"],
@@ -642,6 +657,42 @@ func TestSignIn(t *testing.T) {
 			},
 		},
 		{
+			name: "invalid request - invalid transaction data - empty field id",
+			body: SignInRequestObject{
+				Body: &SignInJSONRequestBody{
+					TransactionData: &TransactionData{
+						ChainID:         1234,
+						ContractAddress: "",
+					},
+					ChainID: common.ToPointer("80001"),
+					Scope: []ScopeRequest{
+						{
+							CircuitId: "credentialAtomicQuerySigV2OnChain",
+							Query: jsonToMap(t, `{
+							"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+							"allowedIssuers": ["*"],
+							"type": "KYCAgeCredential",
+							"credentialSubject": {
+								"birthday": {
+									"$eq": 19960424
+								}
+							},
+							"proofType": "BJJSignature2021"
+						  }`),
+						},
+					},
+				},
+			},
+			expected: expected{
+				httpCode: http.StatusBadRequest,
+				SignInResponseObject: SignIn400JSONResponse{
+					N400JSONResponse{
+						Message: "field scope id is empty",
+					},
+				},
+			},
+		},
+		{
 			name: "valid on-chain request",
 			body: SignInRequestObject{
 				Body: &SignInJSONRequestBody{
@@ -654,6 +705,7 @@ func TestSignIn(t *testing.T) {
 					ChainID: common.ToPointer("80001"),
 					Scope: []ScopeRequest{
 						{
+							Id:        2,
 							CircuitId: "credentialAtomicQuerySigV2OnChain",
 							Query: jsonToMap(t, `{
 							"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
@@ -678,7 +730,7 @@ func TestSignIn(t *testing.T) {
 							Scope: []Scope{
 								{
 									CircuitId: "credentialAtomicQuerySigV2OnChain",
-									Id:        0,
+									Id:        2,
 									Query: map[string]interface{}{
 										"allowedIssuers": []interface{}{"*"},
 										"context":        "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
@@ -708,6 +760,7 @@ func TestSignIn(t *testing.T) {
 					ChainID: common.ToPointer("80001"),
 					Scope: []ScopeRequest{
 						{
+							Id:        2,
 							CircuitId: "credentialAtomicQuerySigV2OnChain",
 							Query: jsonToMap(t, `{
 							"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
@@ -741,6 +794,7 @@ func TestSignIn(t *testing.T) {
 					Scope: []ScopeRequest{
 						{
 							CircuitId: "credentialAtomicQuerySigV2",
+							Id:        2,
 							Query: jsonToMap(t, `{
 							"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
 							"allowedIssuers": ["*"],
@@ -773,6 +827,7 @@ func TestSignIn(t *testing.T) {
 					Scope: []ScopeRequest{
 						{
 							CircuitId: "credentialAtomicQuerySigV2",
+							Id:        2,
 							Query: jsonToMap(t, `{
 							"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
 							"type": "KYCAgeCredential",
@@ -804,6 +859,7 @@ func TestSignIn(t *testing.T) {
 					Scope: []ScopeRequest{
 						{
 							CircuitId: "credentialAtomicQuerySigV2",
+							Id:        2,
 							Query: jsonToMap(t, `{
 							"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
 							"allowedIssuers": ["*"],

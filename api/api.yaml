@@ -59,6 +59,7 @@ paths:
                       "scope": [
                         {
                           "circuitID": "credentialAtomicQuerySigV2",
+                          "id": 1,
                           "query": {
                             "context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
                             "allowedIssuers": [ "*" ],
@@ -80,6 +81,7 @@ paths:
                       "scope": [
                         {
                           "circuitID": "credentialAtomicQuerySigV2",
+                          "id": 1,
                           "query": {
                             "context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
                             "allowedIssuers": [ "*" ],
@@ -342,6 +344,7 @@ components:
       properties:
         id:
           type: integer
+          format: uint32
           example: 1
         circuitId:
           type: string
@@ -351,6 +354,7 @@ components:
       example:
         {
           "circuitID": "credentialAtomicQuerySigV2",
+          "id": 1,
           "query": {
             "context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
             "allowedIssuers": [ "*" ],
@@ -407,7 +411,12 @@ components:
       required:
         - circuitId
         - query
+        - id
       properties:
+        id:
+          type: integer
+          format: uint32
+          example: 1
         circuitId:
           type: string
           example: 'credentialAtomicQuerySigV2'
