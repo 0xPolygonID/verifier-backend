@@ -426,6 +426,19 @@ components:
         }
 
 
+    ScopeRequest:
+      type: object
+      required:
+        - circuitId
+        - query
+      properties:
+        circuitId:
+          type: string
+          example: 'credentialAtomicQuerySigV2'
+        query:
+          $ref: '#/components/schemas/Query'
+
+
     TransactionDataResponse:
       type: object
       description: |

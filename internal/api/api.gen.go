@@ -75,6 +75,12 @@ type ScopeRequest struct {
 	Query     Query        `json:"query"`
 }
 
+// ScopeRequest defines model for ScopeRequest.
+type ScopeRequest struct {
+	CircuitId string `json:"circuitId"`
+	Query     Query  `json:"query"`
+}
+
 // SignInRequest defines model for SignInRequest.
 type SignInRequest struct {
 	// ChainID Only required when using off-chain verification
