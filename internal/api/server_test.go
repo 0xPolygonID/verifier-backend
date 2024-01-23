@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"math/big"
 	"net/http"
 	"strings"
 	"testing"
@@ -60,7 +61,7 @@ func TestSignIn(t *testing.T) {
 							Scope: []Scope{
 								{
 									CircuitId: "credentialAtomicQuerySigV2",
-									Id:        1,
+									Id:        0,
 									Query: map[string]interface{}{
 										"allowedIssuers": []interface{}{"*"},
 										"context":        "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
@@ -114,7 +115,7 @@ func TestSignIn(t *testing.T) {
 							Scope: []Scope{
 								{
 									CircuitId: "credentialAtomicQuerySigV2",
-									Id:        1,
+									Id:        0,
 									Query: map[string]interface{}{
 										"allowedIssuers": []interface{}{"*"},
 										"context":        "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
@@ -167,7 +168,7 @@ func TestSignIn(t *testing.T) {
 							Scope: []Scope{
 								{
 									CircuitId: "credentialAtomicQueryMTPV2",
-									Id:        1,
+									Id:        0,
 									Query: map[string]interface{}{
 										"allowedIssuers": []interface{}{"*"},
 										"context":        "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
@@ -231,6 +232,21 @@ func TestSignIn(t *testing.T) {
 											},
 										},
 										"type":      "KYCAgeCredential",
+										"proofType": "BJJSignature2021",
+									},
+								},
+								{
+									CircuitId: "credentialAtomicQueryV3-beta.0",
+									Id:        1,
+									Query: map[string]interface{}{
+										"allowedIssuers": []interface{}{"*"},
+										"context":        "ipfs://QmaBJzpoYT2CViDx5ShJiuYLKXizrPEfXo8JqzrXCvG6oc",
+										"credentialSubject": map[string]interface{}{
+											"position": map[string]interface{}{
+												"$eq": float64(1),
+											},
+										},
+										"type":      "TestInteger01",
 										"proofType": "BJJSignature2021",
 									},
 								},
@@ -421,6 +437,133 @@ func TestSignIn(t *testing.T) {
 				SignInResponseObject: SignIn400JSONResponse{
 					N400JSONResponse{
 						Message: "field circuitId value is wrong, got credentialAtomicQueryV3-beta.0, expected credentialAtomicQuerySigV2OnChain or credentialAtomicQueryMTPV2OnChain",
+					},
+				},
+			},
+		},
+		{
+			name: "invalid request for credentialAtomicQueryV3-beta.0 and KYCAgeCredential circuits",
+			body: SignInRequestObject{
+				Body: &SignInJSONRequestBody{
+					ChainID: common.ToPointer("80001"),
+					Scope: []ScopeRequest{
+						{
+							CircuitId: "credentialAtomicQueryV3-beta.0",
+							Query: jsonToMap(t, `{
+							"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+							"allowedIssuers": ["*"],
+							"type": "KYCAgeCredential",
+							"credentialSubject": {
+								"birthday": {
+									"$eq": 19960424
+								}
+							},
+							"proofType": "BJJSignature2021"
+						  }`),
+						},
+						{
+							CircuitId: "credentialAtomicQuerySigV2OnChain",
+							Query: jsonToMap(t, `{
+							"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+							"allowedIssuers": ["*"],
+							"type": "KYCAgeCredential",
+							"credentialSubject": {
+								"birthday": {
+									"$eq": 19960424
+								}
+							},
+							"proofType": "BJJSignature2021"
+						  }`),
+						},
+					},
+				},
+			},
+			expected: expected{
+				httpCode: http.StatusBadRequest,
+				SignInResponseObject: SignIn400JSONResponse{
+					N400JSONResponse{
+						Message: "field circuitId value is wrong, got credentialAtomicQuerySigV2OnChain, expected credentialAtomicQuerySigV2 or credentialAtomicQueryMTPV2 or credentialAtomicQueryV3-beta.0",
+					},
+				},
+			},
+		},
+		{
+			name: "invalid request for credentialAtomicQueryV3-beta.0 and credentialAtomicQuerySigV2OnChain circuits",
+			body: SignInRequestObject{
+				Body: &SignInJSONRequestBody{
+					ChainID: common.ToPointer("80001"),
+					Scope: []ScopeRequest{
+						{
+							CircuitId: "credentialAtomicQuerySigV2OnChain",
+							Query: jsonToMap(t, `{
+							"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+							"allowedIssuers": ["*"],
+							"type": "KYCAgeCredential",
+							"credentialSubject": {
+								"birthday": {
+									"$eq": 19960424
+								}
+							},
+							"proofType": "BJJSignature2021"
+						  }`),
+						},
+						{
+							CircuitId: "credentialAtomicQueryV3-beta.0",
+							Query: jsonToMap(t, `{
+							"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+							"allowedIssuers": ["*"],
+							"type": "KYCAgeCredential",
+							"credentialSubject": {
+								"birthday": {
+									"$eq": 19960424
+								}
+							},
+							"proofType": "BJJSignature2021"
+						  }`),
+						},
+					},
+				},
+			},
+			expected: expected{
+				httpCode: http.StatusBadRequest,
+				SignInResponseObject: SignIn400JSONResponse{
+					N400JSONResponse{
+						Message: "field circuitId value is wrong, got credentialAtomicQueryV3-beta.0, expected credentialAtomicQuerySigV2OnChain or credentialAtomicQueryMTPV2OnChain",
+					},
+				},
+			},
+		},
+		{
+			name: "invalid request - invalid params",
+			body: SignInRequestObject{
+				Body: &SignInJSONRequestBody{
+					ChainID: common.ToPointer("80001"),
+					Scope: []ScopeRequest{
+						{
+							CircuitId: "credentialAtomicQueryV3-beta.0",
+							Query: jsonToMap(t, `{
+							"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+							"allowedIssuers": ["*"],
+							"type": "KYCAgeCredential",
+							"credentialSubject": {
+								"birthday": {
+									"$eq": 19960424
+								}
+							},
+							"proofType": "BJJSignature2021"
+						  }`),
+							Params: common.ToPointer(map[string]interface{}{
+								"nullifierSessionId": "invalid",
+							}),
+						},
+					},
+				},
+			},
+			expected: expected{
+				httpCode: http.StatusBadRequest,
+				SignInResponseObject: SignIn400JSONResponse{
+					N400JSONResponse{
+						Message: "nullifierSessionId is not a valid big integer",
 					},
 				},
 			},
@@ -705,8 +848,8 @@ func TestSignIn(t *testing.T) {
 					ChainID: common.ToPointer("80001"),
 					Scope: []ScopeRequest{
 						{
-							Id:        2,
 							CircuitId: "credentialAtomicQuerySigV2OnChain",
+							Id: 2,
 							Query: jsonToMap(t, `{
 							"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
 							"allowedIssuers": ["*"],
@@ -895,6 +1038,9 @@ func TestSignIn(t *testing.T) {
 				if expected.QrCode.Body.Scope[0].CircuitId == "credentialAtomicQuerySigV2" || expected.QrCode.Body.Scope[0].CircuitId == "credentialAtomicQueryMTPV2" || expected.QrCode.Body.Scope[0].CircuitId == "credentialAtomicQueryV3-beta.0" {
 					require.NotNil(t, response.QrCode.Body.CallbackUrl)
 					assert.True(t, isValidCallBack(t, *response.QrCode.Body.CallbackUrl))
+					if expected.QrCode.Body.Scope[0].Params != nil {
+						assert.Equal(t, expected.QrCode.Body.Scope[0].Params, response.QrCode.Body.Scope[0].Params)
+					}
 				}
 				assert.Equal(t, expected.QrCode.From, response.QrCode.From)
 				assert.Equal(t, expected.QrCode.Typ, response.QrCode.Typ)

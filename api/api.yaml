@@ -351,6 +351,8 @@ components:
           example: 'credentialAtomicQuerySigV2'
         query:
           $ref: '#/components/schemas/Query'
+        params:
+          $ref: '#/components/schemas/ScopeParams'
       example:
         {
           "circuitID": "credentialAtomicQuerySigV2",
@@ -410,7 +412,7 @@ components:
       type: object
       required:
         - circuitId
-        - query
+        - scope
         - id
       properties:
         id:
@@ -420,9 +422,21 @@ components:
         circuitId:
           type: string
           example: 'credentialAtomicQuerySigV2'
-        query:
-          $ref: '#/components/schemas/Query'
+        scope:
+          type: array
+          items:
+            $ref: '#/components/schemas/ScopeRequest'
+        transactionData:
+          $ref : '#/components/schemas/TransactionData'
+        params:
+          $ref: '#/components/schemas/ScopeParams'
 
+    ScopeParams:
+      type: object
+      example:
+        {
+          "nullifierSessionId": "123443290439234342342423423423423"
+        }
 
     TransactionDataResponse:
       type: object
