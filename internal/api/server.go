@@ -544,7 +544,7 @@ func getContractInvokeRequestOnChain(req SignInRequestObject, cfg config.Config)
 		return protocol.ContractInvokeRequestMessage{}, err
 	}
 
-	mtpProofRequests := make([]protocol.ZeroKnowledgeProofRequest,0, len(req.Body.Scope))
+	mtpProofRequests := make([]protocol.ZeroKnowledgeProofRequest, 0, len(req.Body.Scope))
 	for _, scope := range req.Body.Scope {
 		mtpProofRequests = append(mtpProofRequests, protocol.ZeroKnowledgeProofRequest{
 			ID:        scope.Id,

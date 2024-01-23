@@ -60,7 +60,7 @@ type Query = map[string]interface{}
 // Scope defines model for Scope.
 type Scope struct {
 	CircuitId string       `json:"circuitId"`
-	Id        int          `json:"id"`
+	Id        uint32       `json:"id"`
 	Params    *ScopeParams `json:"params,omitempty"`
 	Query     Query        `json:"query"`
 }
@@ -71,8 +71,12 @@ type ScopeParams = map[string]interface{}
 // ScopeRequest defines model for ScopeRequest.
 type ScopeRequest struct {
 	CircuitId string       `json:"circuitId"`
+	Id        uint32       `json:"id"`
 	Params    *ScopeParams `json:"params,omitempty"`
 	Query     Query        `json:"query"`
+
+	// TransactionData Only required when using on-chain verification
+	TransactionData *TransactionData `json:"transactionData,omitempty"`
 }
 
 // SignInRequest defines model for SignInRequest.

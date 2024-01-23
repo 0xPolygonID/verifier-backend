@@ -6,7 +6,7 @@ require (
 	github.com/deepmap/oapi-codegen v1.16.2
 	github.com/go-chi/chi/v5 v5.0.11
 	github.com/go-chi/cors v1.2.1
-	github.com/golangci/golangci-lint v1.55.2
+	github.com/golangci/golangci-lint v1.55.1
 	github.com/google/uuid v1.5.0
 	github.com/iden3/go-iden3-auth/v2 v2.1.0
 	github.com/iden3/go-schema-processor/v2 v2.2.0

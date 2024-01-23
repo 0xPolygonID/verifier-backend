@@ -412,7 +412,7 @@ components:
       type: object
       required:
         - circuitId
-        - scope
+        - query
         - id
       properties:
         id:
@@ -422,10 +422,8 @@ components:
         circuitId:
           type: string
           example: 'credentialAtomicQuerySigV2'
-        scope:
-          type: array
-          items:
-            $ref: '#/components/schemas/ScopeRequest'
+        query:
+          $ref: '#/components/schemas/Query'
         transactionData:
           $ref : '#/components/schemas/TransactionData'
         params:

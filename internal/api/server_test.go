@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"math/big"
 	"net/http"
 	"strings"
 	"testing"
@@ -849,7 +848,7 @@ func TestSignIn(t *testing.T) {
 					Scope: []ScopeRequest{
 						{
 							CircuitId: "credentialAtomicQuerySigV2OnChain",
-							Id: 2,
+							Id:        2,
 							Query: jsonToMap(t, `{
 							"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
 							"allowedIssuers": ["*"],
