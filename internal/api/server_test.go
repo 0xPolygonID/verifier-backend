@@ -307,7 +307,7 @@ func TestSignIn(t *testing.T) {
 			},
 		},
 		{
-			name: "valid request for credentialAtomicQueryV3-beta.0 and TestInteger01 circuits",
+			name: "invalid request duplicated query id",
 			body: SignInRequestObject{
 				Body: &SignInJSONRequestBody{
 					ChainID: common.ToPointer("80001"),
@@ -346,6 +346,54 @@ func TestSignIn(t *testing.T) {
 				},
 			},
 			expected: expected{
+				httpCode: http.StatusBadRequest,
+				SignInResponseObject: SignIn400JSONResponse{
+					N400JSONResponse{
+						Message: "field scope id must be unique, got 1 multiple times",
+					},
+				},
+			},
+		},
+		{
+			name: "valid request for credentialAtomicQueryV3-beta.0 and TestInteger01 circuits",
+			body: SignInRequestObject{
+				Body: &SignInJSONRequestBody{
+					ChainID: common.ToPointer("80001"),
+					Scope: []ScopeRequest{
+						{
+							Id:        1,
+							CircuitId: "credentialAtomicQueryV3-beta.0",
+							Query: jsonToMap(t, `{
+							"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+							"allowedIssuers": ["*"],
+							"type": "KYCAgeCredential",
+							"credentialSubject": {
+								"birthday": {
+									"$eq": 19960424
+								}
+							},
+							"proofType": "BJJSignature2021"
+						  }`),
+						},
+						{
+							CircuitId: "credentialAtomicQueryV3-beta.0",
+							Id:        2,
+							Query: jsonToMap(t, `{
+							"context": "ipfs://QmaBJzpoYT2CViDx5ShJiuYLKXizrPEfXo8JqzrXCvG6oc",
+							"allowedIssuers": ["*"],
+							"type": "TestInteger01",
+							"credentialSubject": {
+								"position": {
+									"$eq": 1
+								}
+							},
+							"proofType": "BJJSignature2021"
+						  }`),
+						},
+					},
+				},
+			},
+			expected: expected{
 				httpCode: http.StatusOK,
 				SignInResponseObject: SignIn200JSONResponse{
 					QrCode: QRCode{
@@ -368,7 +416,7 @@ func TestSignIn(t *testing.T) {
 								},
 								{
 									CircuitId: "credentialAtomicQueryV3-beta.0",
-									Id:        1,
+									Id:        2,
 									Query: map[string]interface{}{
 										"allowedIssuers": []interface{}{"*"},
 										"context":        "ipfs://QmaBJzpoYT2CViDx5ShJiuYLKXizrPEfXo8JqzrXCvG6oc",
@@ -414,7 +462,7 @@ func TestSignIn(t *testing.T) {
 						},
 						{
 							CircuitId: "credentialAtomicQuerySigV2OnChain",
-							Id:        1,
+							Id:        2,
 							Query: jsonToMap(t, `{
 							"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
 							"allowedIssuers": ["*"],
@@ -462,7 +510,7 @@ func TestSignIn(t *testing.T) {
 						},
 						{
 							CircuitId: "credentialAtomicQueryV3-beta.0",
-							Id:        1,
+							Id:        2,
 							Query: jsonToMap(t, `{
 							"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
 							"allowedIssuers": ["*"],

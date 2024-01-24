@@ -120,12 +120,20 @@ func (s *Server) Callback(ctx context.Context, request CallbackRequestObject) (C
 			"err":       err,
 		}).Error("failed to verify")
 		s.cache.Set(sessionID.String(), err, cache.DefaultExpiration)
-		return nil, err
+		return Callback500JSONResponse{
+			N500JSONResponse: N500JSONResponse{
+				Message: err.Error(),
+			},
+		}, nil
 	}
 
 	scopes, err := getVerificationResponseScopes(authRespMsg.Body.Scope)
 	if err != nil {
-		return nil, err
+		return Callback500JSONResponse{
+			N500JSONResponse: N500JSONResponse{
+				Message: err.Error(),
+			},
+		}, nil
 	}
 
 	s.cache.Set(sessionID.String(), models.VerificationResponse{Jwz: *request.Body, UserDID: authRespMsg.From, Scopes: scopes}, cache.DefaultExpiration)
@@ -412,7 +420,13 @@ func validateOffChainRequest(request SignInRequestObject) error {
 }
 
 func validateRequestQuery(offChainRequest bool, scope []ScopeRequest) error {
+	reqIds := make(map[uint32]bool, 0)
 	for _, scope := range scope {
+		if reqIds[scope.Id] {
+			return fmt.Errorf("field scope id must be unique, got %d multiple times", scope.Id)
+		}
+		reqIds[scope.Id] = true
+
 		if scope.Id <= 0 {
 			return errors.New("field scope id is empty")
 		}
@@ -583,8 +597,8 @@ func getVerificationResponseScopes(scopes []protocol.ZeroKnowledgeProofResponse)
 	}
 
 	resp := make([]models.VerificationResponseScope, 0, len(scopes))
-	ps := circuits.AtomicQueryV3PubSignals{}
 	for _, scope := range scopes {
+		ps := circuits.AtomicQueryV3PubSignals{}
 		if scope.CircuitID != "credentialAtomicQueryV3-beta.0" {
 			return []models.VerificationResponseScope{}, nil
 		}
