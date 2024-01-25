@@ -37,6 +37,7 @@ const (
 	mumbaiNetwork        = "80001"
 	mainnetNetwork       = "137"
 	defaultReason        = "for testing purposes"
+	defaultBigIntBase    = 10
 )
 
 // Server represents the API server
@@ -372,11 +373,15 @@ func getAuthReqQRCode(request protocol.AuthorizationRequestMessage) QRCode {
 func getInvokeContractQRCode(request protocol.ContractInvokeRequestMessage) QRCode {
 	scopes := make([]Scope, 0, len(request.Body.Scope))
 	for _, scope := range request.Body.Scope {
-		scopes = append(scopes, Scope{
+		sc := Scope{
 			CircuitId: scope.CircuitID,
 			Id:        scope.ID,
 			Query:     scope.Query,
-		})
+		}
+		if scope.Params != nil {
+			sc.Params = common.ToPointer(scope.Params)
+		}
+		scopes = append(scopes, sc)
 	}
 
 	qrCode := QRCode{
@@ -472,7 +477,6 @@ func validateRequestQuery(offChainRequest bool, scope []ScopeRequest) error {
 }
 
 func getAuthRequestOffChain(req SignInRequestObject, cfg config.Config, sessionID uuid.UUID) (protocol.AuthorizationRequestMessage, error) {
-	const defaultBigIntBase = 10
 	if err := validateOffChainRequest(req); err != nil {
 		return protocol.AuthorizationRequestMessage{}, err
 	}
@@ -494,13 +498,13 @@ func getAuthRequestOffChain(req SignInRequestObject, cfg config.Config, sessionI
 		}
 		if scope.Params != nil {
 			params := *scope.Params
-			val, ok := params["nullifierSessionId"]
+			val, ok := params["nullifierSessionID"]
 			if !ok {
-				return protocol.AuthorizationRequestMessage{}, errors.New("nullifierSessionId is empty")
+				return protocol.AuthorizationRequestMessage{}, errors.New("nullifierSessionID is empty")
 			}
 			nullifierSessionID := new(big.Int)
 			if _, ok := nullifierSessionID.SetString(val.(string), defaultBigIntBase); !ok {
-				return protocol.AuthorizationRequestMessage{}, errors.New("nullifierSessionId is not a valid big integer")
+				return protocol.AuthorizationRequestMessage{}, errors.New("nullifierSessionID is not a valid big integer")
 			}
 			mtpProofRequest.Params = *scope.Params
 		}
@@ -544,11 +548,24 @@ func getContractInvokeRequestOnChain(req SignInRequestObject, cfg config.Config)
 
 	mtpProofRequests := make([]protocol.ZeroKnowledgeProofRequest, 0, len(req.Body.Scope))
 	for _, scope := range req.Body.Scope {
-		mtpProofRequests = append(mtpProofRequests, protocol.ZeroKnowledgeProofRequest{
+		zkProofReq := protocol.ZeroKnowledgeProofRequest{
 			ID:        scope.Id,
 			CircuitID: scope.CircuitId,
 			Query:     scope.Query,
-		})
+		}
+		if scope.Params != nil {
+			params := *scope.Params
+			val, ok := params["nullifierSessionID"]
+			if !ok {
+				return protocol.ContractInvokeRequestMessage{}, errors.New("nullifierSessionID is empty")
+			}
+			nullifierSessionID := new(big.Int)
+			if _, ok := nullifierSessionID.SetString(val.(string), defaultBigIntBase); !ok {
+				return protocol.ContractInvokeRequestMessage{}, errors.New("nullifierSessionID is not a valid big integer")
+			}
+			zkProofReq.Params = *scope.Params
+		}
+		mtpProofRequests = append(mtpProofRequests, zkProofReq)
 	}
 
 	transactionData := protocol.TransactionData{

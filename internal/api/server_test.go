@@ -266,7 +266,7 @@ func TestSignIn(t *testing.T) {
 							"proofType": "BJJSignature2021"
 						  }`),
 							Params: common.ToPointer(map[string]interface{}{
-								"nullifierSessionId": big.NewInt(100).String(),
+								"nullifierSessionID": big.NewInt(100).String(),
 							}),
 						},
 					},
@@ -293,7 +293,7 @@ func TestSignIn(t *testing.T) {
 										"proofType": "BJJSignature2021",
 									},
 									Params: common.ToPointer(map[string]interface{}{
-										"nullifierSessionId": big.NewInt(100).String(),
+										"nullifierSessionID": big.NewInt(100).String(),
 									}),
 								},
 							},
@@ -621,7 +621,7 @@ func TestSignIn(t *testing.T) {
 							"proofType": "BJJSignature2021"
 						  }`),
 							Params: common.ToPointer(map[string]interface{}{
-								"nullifierSessionId": "invalid",
+								"nullifierSessionID": "invalid",
 							}),
 						},
 					},
@@ -631,7 +631,7 @@ func TestSignIn(t *testing.T) {
 				httpCode: http.StatusBadRequest,
 				SignInResponseObject: SignIn400JSONResponse{
 					N400JSONResponse{
-						Message: "nullifierSessionId is not a valid big integer",
+						Message: "nullifierSessionID is not a valid big integer",
 					},
 				},
 			},

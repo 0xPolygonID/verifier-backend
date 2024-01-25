@@ -8,10 +8,14 @@ info:
 servers:
   - description: Local
     url: http://localhost:3010
+  - description: Dev
+    url: https://verifier-backend-dev.polygonid.me
 
 tags:
-  - name: Verifier
-    description: Collection of endpoints related to Verifier
+  - name: Public
+    description: Public endpoints for integrators
+  - name: Internal
+    description: Internal endpoints
 
 paths:
   /:
@@ -19,6 +23,8 @@ paths:
       summary: Get the documentation
       operationId: GetDocumentation
       x-internal: true
+      tags:
+        - Internal
       responses:
         200:
           description: success and returns the documentation in HTML format
@@ -27,6 +33,8 @@ paths:
     get:
       summary: Health Check
       operationId: Health
+      tags:
+        - Internal
       responses:
         '200':
           description: All services are running
@@ -37,6 +45,8 @@ paths:
         '500':
           $ref: '#/components/responses/500'
 
+
+
   /sign-in:
     post:
       summary: Sign in
@@ -44,7 +54,7 @@ paths:
       description: |
         Sign in with a verification request
       tags:
-        - Verifier
+        - Public
       requestBody:
         content:
             application/json:
@@ -121,7 +131,7 @@ paths:
       summary: Get Status
       operationId: Status
       tags:
-        - Verifier
+        - Public
       parameters:
           - $ref: '#/components/parameters/sessionID'
       responses:
@@ -141,7 +151,7 @@ paths:
       summary: Store QRCode
       operationId: QRStore
       tags:
-        - Verifier
+        - Public
       requestBody:
           content:
             application/json:
@@ -162,7 +172,7 @@ paths:
       summary: Get QRCode from store
       operationId: GetQRCodeFromStore
       tags:
-        - Verifier
+        - Public
       parameters:
         - $ref: '#/components/parameters/id'
       responses:
@@ -182,7 +192,7 @@ paths:
       summary: Callback
       operationId: Callback
       tags:
-        - Verifier
+        - Internal
       parameters:
         - $ref: '#/components/parameters/sessionID'
       requestBody:
@@ -453,7 +463,7 @@ components:
       type: object
       example:
         {
-          "nullifierSessionId": "123443290439234342342423423423423"
+          "nullifierSessionID": "123443290439234342342423423423423"
         }
 
     TransactionDataResponse:
