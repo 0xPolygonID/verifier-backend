@@ -285,7 +285,7 @@ func TestSignIn(t *testing.T) {
 									"proofType": "BJJSignature2021",
 								},
 								Params: common.ToPointer(map[string]interface{}{
-									"nullifierSessionID": big.NewInt(100).String(),
+									"nullifierSessionId": big.NewInt(100).String(),
 								}),
 							},
 						},
