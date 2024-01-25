@@ -52,7 +52,38 @@ paths:
       summary: Sign in
       operationId: Sign in
       description: |
-        Sign in with a verification request
+        This endpoint returns a QR Code and a Session ID. 
+        The QR Code can be used to produce a QR Code to be scanned with the PID to perform the verification.
+        SessionID can be used to pool the status of the verification with the /status endpoint.
+        
+        The scope is an array of objects that contains the information of the verification to be performed.
+        Multiple verifications can be performed in a single request and from different credentials.
+        
+        In order to create your custom queries visit our [query builder](https://schema-builder-dev.polygonid.me/query-builder/)
+        
+        ### circuitID values:
+        
+        V3 Circuits are still in beta. V3 Circuits support `nullifiers` that can be used for checking weather a credential has been already verifier or not.
+        In order to use V3 circuits, please enable them in the PID app under the settings section.
+        
+        #### Off-chain
+        
+        V2 circuits:
+        - `credentialAtomicQuerySigV2`: for SIG credentials verifications 
+        - `credentialAtomicQueryMTPV2`: for MTP credentials verifications
+        
+        V3 circuits:
+        - `credentialAtomicQueryV3-beta.0`: MTP and SIG credentials verifications
+        
+        #### On-chain
+        
+        V2 circuits:
+        - `credentialAtomicQuerySigV2OnChain`: for SIG credentials verifications 
+        - `credentialAtomicQueryMTPV2OnChain`: for MTP credentials verifications
+        
+        V3 circuits:
+        - `credentialAtomicQueryV3OnChain-beta.0`: MTP and SIG credentials verifications
+
       tags:
         - Public
       requestBody:
@@ -61,7 +92,73 @@ paths:
               schema:
                 $ref: '#/components/schemas/SignInRequest'
               examples:
-                OffChain:
+                OffChain-SIG-V2:
+                  value:
+                    {
+                      "chainID": "80001",
+                      "skipClaimRevocationCheck": false,
+                      "scope": [
+                        {
+                          "circuitID": "credentialAtomicQuerySigV2",
+                          "id": 1,
+                          "query": {
+                            "context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+                            "allowedIssuers": [ "*" ],
+                            "type": "KYCAgeCredential",
+                            "credentialSubject": {
+                              "birthday": {
+                                "$lt": 20201010
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    }
+                OffChain-MTP-V2:
+                  value:
+                    {
+                      "chainID": "80001",
+                      "skipClaimRevocationCheck": false,
+                      "scope": [
+                        {
+                          "circuitID": "credentialAtomicQueryMTPV2",
+                          "id": 1,
+                          "query": {
+                            "context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+                            "allowedIssuers": [ "*" ],
+                            "type": "KYCAgeCredential",
+                            "credentialSubject": {
+                              "birthday": {
+                                "$lt": 20201010
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    }
+                OffChain-SIG-V3:
+                  value:
+                    {
+                      "chainID": "80001",
+                      "skipClaimRevocationCheck": false,
+                      "scope": [
+                        {
+                          "circuitID": "credentialAtomicQueryV3-beta.0",
+                          "id": 1,
+                          "query": {
+                            "context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+                            "allowedIssuers": [ "*" ],
+                            "type": "KYCAgeCredential",
+                            "credentialSubject": {
+                              "birthday": {
+                                "$lt": 20201010
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    }
+                OffChain-SIG-V3-Nullifiers:
                   value:
                     {
                       "chainID": "80001",
@@ -71,7 +168,7 @@ paths:
                           "circuitID": "credentialAtomicQueryV3-beta.0",
                           "id": 1,
                           "params": {
-                            "nullifierSessionId": "123443290439234342342423423423423"
+                            "nullifierSessionID": "123443290439234342342423423423423"
                           },
                           "query": {
                             "context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
@@ -86,14 +183,78 @@ paths:
                         }
                       ]
                     }
-                OnChain:
+                OffChain-SIG-V3-Multiple-Queries:
                   value:
                     {
                       "chainID": "80001",
                       "skipClaimRevocationCheck": false,
                       "scope": [
                         {
-                          "circuitID": "credentialAtomicQuerySigV2",
+                          "circuitID": "credentialAtomicQueryV3-beta.0",
+                          "id": 1,
+                          "query": {
+                            "context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+                            "allowedIssuers": [ "*" ],
+                            "type": "KYCAgeCredential",
+                            "credentialSubject": {
+                              "birthday": {
+                                "$lt": 20201010
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "circuitID": "credentialAtomicQueryV3-beta.0",
+                          "id": 2,
+                          "query": {
+                            "context": "ipfs://QmaBJzpoYT2CViDx5ShJiuYLKXizrPEfXo8JqzrXCvG6oc",
+                            "allowedIssuers": [ "*" ],
+                            "type": "TestInteger01",
+                            "credentialSubject": {
+                              "position": {
+                                "$eq": 2
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    }
+                OnChain-SIG-V2:
+                  value:
+                    {
+                      "chainID": "80001",
+                      "skipClaimRevocationCheck": false,
+                      "scope": [
+                        {
+                          "circuitID": "credentialAtomicQuerySigV2OnChain",
+                          "id": 1,
+                          "query": {
+                            "context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+                            "allowedIssuers": [ "*" ],
+                            "type": "KYCAgeCredential",
+                            "credentialSubject": {
+                              "birthday": {
+                                "$eq": 19960424
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "transactionData": {
+                        "contractAddress": "0xE826f870852D7eeeB79B2C030298f9B5DAA8C8a3",
+                        "methodID": "b68967e2",
+                        "chainID": 80001,
+                        "network": "polygon-mumbai"
+                      }
+                    }
+                OnChain-SIG-V3:
+                  value:
+                    {
+                      "chainID": "80001",
+                      "skipClaimRevocationCheck": false,
+                      "scope": [
+                        {
+                          "circuitID": "credentialAtomicQueryV3OnChain-beta.0",
                           "id": 1,
                           "query": {
                             "context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",

@@ -432,16 +432,12 @@ func getAuthRequestOffChain(req SignInRequestObject, cfg config.Config, sessionI
 			Query:     scope.Query,
 		}
 		if scope.Params != nil {
-			params := *scope.Params
-			val, ok := params["nullifierSessionID"]
-			if !ok {
-				return protocol.AuthorizationRequestMessage{}, errors.New("nullifierSessionID is empty")
+			params, err := getParams(*scope.Params)
+			if err != nil {
+				return protocol.AuthorizationRequestMessage{}, err
 			}
-			nullifierSessionID := new(big.Int)
-			if _, ok := nullifierSessionID.SetString(val.(string), defaultBigIntBase); !ok {
-				return protocol.AuthorizationRequestMessage{}, errors.New("nullifierSessionID is not a valid big integer")
-			}
-			mtpProofRequest.Params = *scope.Params
+
+			mtpProofRequest.Params = params
 		}
 		authReq.Body.Scope = append(authReq.Body.Scope, mtpProofRequest)
 	}
@@ -489,16 +485,11 @@ func getContractInvokeRequestOnChain(req SignInRequestObject, cfg config.Config)
 			Query:     scope.Query,
 		}
 		if scope.Params != nil {
-			params := *scope.Params
-			val, ok := params["nullifierSessionID"]
-			if !ok {
-				return protocol.ContractInvokeRequestMessage{}, errors.New("nullifierSessionID is empty")
+			params, err := getParams(*scope.Params)
+			if err != nil {
+				return protocol.ContractInvokeRequestMessage{}, err
 			}
-			nullifierSessionID := new(big.Int)
-			if _, ok := nullifierSessionID.SetString(val.(string), defaultBigIntBase); !ok {
-				return protocol.ContractInvokeRequestMessage{}, errors.New("nullifierSessionID is not a valid big integer")
-			}
-			zkProofReq.Params = *scope.Params
+			zkProofReq.Params = params
 		}
 		mtpProofRequests = append(mtpProofRequests, zkProofReq)
 	}
@@ -519,6 +510,20 @@ func getContractInvokeRequestOnChain(req SignInRequestObject, cfg config.Config)
 	}
 
 	return authReq, nil
+}
+
+func getParams(params ScopeParams) (map[string]interface{}, error) {
+	val, ok := params["nullifierSessionID"]
+	if !ok {
+		return nil, errors.New("nullifierSessionID is empty")
+	}
+
+	nullifierSessionID := new(big.Int)
+	if _, ok := nullifierSessionID.SetString(val.(string), defaultBigIntBase); !ok {
+		return nil, errors.New("nullifierSessionID is not a valid big integer")
+	}
+
+	return map[string]interface{}{"nullifierSessionId": nullifierSessionID.String()}, nil
 }
 
 func getSenderID(chainID string, cfg config.Config) string {
