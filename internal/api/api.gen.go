@@ -50,6 +50,22 @@ type JWZProofs struct {
 	ScopeID            uint32 `json:"scopeID"`
 }
 
+// JWZRequest defines model for JWZRequest.
+type JWZRequest struct {
+	Jwz string `json:"jwz"`
+}
+
+// Proof defines model for Proof.
+type Proof struct {
+	CredentialSubject map[string]interface{} `json:"credentialSubject"`
+	ProofType         string                 `json:"proofType"`
+	SchemaContext     []string               `json:"schemaContext"`
+	SchemaType        []string               `json:"schemaType"`
+}
+
+// Proofs defines model for Proofs.
+type Proofs = []Proof
+
 // QRCode defines model for QRCode.
 type QRCode struct {
 	Body Body    `json:"body"`
@@ -176,6 +192,9 @@ type StatusParams struct {
 // CallbackTextRequestBody defines body for Callback for text/plain ContentType.
 type CallbackTextRequestBody = CallbackTextBody
 
+// GetJWZJSONRequestBody defines body for GetJWZ for application/json ContentType.
+type GetJWZJSONRequestBody = JWZRequest
+
 // SignInJSONRequestBody defines body for SignIn for application/json ContentType.
 type SignInJSONRequestBody = SignInRequest
 
@@ -190,6 +209,9 @@ type ServerInterface interface {
 	// Health Check
 	// (GET /health)
 	Health(w http.ResponseWriter, r *http.Request)
+	// Get JWZ Metadata
+	// (POST /jwz)
+	GetJWZ(w http.ResponseWriter, r *http.Request)
 	// Get QRCode from store
 	// (GET /qr-store)
 	GetQRCodeFromStore(w http.ResponseWriter, r *http.Request, params GetQRCodeFromStoreParams)
@@ -220,6 +242,12 @@ func (_ Unimplemented) Callback(w http.ResponseWriter, r *http.Request, params C
 // Health Check
 // (GET /health)
 func (_ Unimplemented) Health(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Get JWZ Metadata
+// (POST /jwz)
+func (_ Unimplemented) GetJWZ(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -306,6 +334,21 @@ func (siw *ServerInterfaceWrapper) Health(w http.ResponseWriter, r *http.Request
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.Health(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// GetJWZ operation middleware
+func (siw *ServerInterfaceWrapper) GetJWZ(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetJWZ(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -523,6 +566,9 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 		r.Get(options.BaseURL+"/health", wrapper.Health)
 	})
 	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/jwz", wrapper.GetJWZ)
+	})
+	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/qr-store", wrapper.GetQRCodeFromStore)
 	})
 	r.Group(func(r chi.Router) {
@@ -611,6 +657,41 @@ func (response Health200JSONResponse) VisitHealthResponse(w http.ResponseWriter)
 type Health500JSONResponse struct{ N500JSONResponse }
 
 func (response Health500JSONResponse) VisitHealthResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetJWZRequestObject struct {
+	Body *GetJWZJSONRequestBody
+}
+
+type GetJWZResponseObject interface {
+	VisitGetJWZResponse(w http.ResponseWriter) error
+}
+
+type GetJWZ200JSONResponse Proofs
+
+func (response GetJWZ200JSONResponse) VisitGetJWZResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetJWZ400JSONResponse struct{ N400JSONResponse }
+
+func (response GetJWZ400JSONResponse) VisitGetJWZResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetJWZ500JSONResponse struct{ N500JSONResponse }
+
+func (response GetJWZ500JSONResponse) VisitGetJWZResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(500)
 
@@ -733,6 +814,9 @@ type StrictServerInterface interface {
 	// Health Check
 	// (GET /health)
 	Health(ctx context.Context, request HealthRequestObject) (HealthResponseObject, error)
+	// Get JWZ Metadata
+	// (POST /jwz)
+	GetJWZ(ctx context.Context, request GetJWZRequestObject) (GetJWZResponseObject, error)
 	// Get QRCode from store
 	// (GET /qr-store)
 	GetQRCodeFromStore(ctx context.Context, request GetQRCodeFromStoreRequestObject) (GetQRCodeFromStoreResponseObject, error)
@@ -848,6 +932,37 @@ func (sh *strictHandler) Health(w http.ResponseWriter, r *http.Request) {
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
 	} else if validResponse, ok := response.(HealthResponseObject); ok {
 		if err := validResponse.VisitHealthResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetJWZ operation middleware
+func (sh *strictHandler) GetJWZ(w http.ResponseWriter, r *http.Request) {
+	var request GetJWZRequestObject
+
+	var body GetJWZJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetJWZ(ctx, request.(GetJWZRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetJWZ")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetJWZResponseObject); ok {
+		if err := validResponse.VisitGetJWZResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {

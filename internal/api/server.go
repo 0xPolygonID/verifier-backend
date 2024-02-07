@@ -18,6 +18,7 @@ import (
 	"github.com/iden3/go-iden3-auth/v2/loaders"
 	"github.com/iden3/go-iden3-auth/v2/pubsignals"
 	"github.com/iden3/go-iden3-auth/v2/state"
+	"github.com/iden3/go-jwz/v2"
 	"github.com/iden3/iden3comm/v2/protocol"
 	"github.com/patrickmn/go-cache"
 	log "github.com/sirupsen/logrus"
@@ -63,6 +64,20 @@ func RegisterStatic(mux *chi.Mux) {
 	mux.Get("/", documentation)
 	mux.Get("/static/docs/api/api.yaml", swagger)
 	mux.Get("/favicon.ico", favicon)
+}
+
+func (s *Server) GetJWZ(_ context.Context, req GetJWZRequestObject) (GetJWZResponseObject, error) {
+	if req.Body.Jwz == "" {
+		return GetJWZ400JSONResponse{N400JSONResponse{Message: "field jwz is empty"}}, nil
+	}
+
+	proofs, err := getProofPayload(req.Body.Jwz)
+	if err != nil {
+		log.Error(err)
+		return GetJWZ400JSONResponse{N400JSONResponse{Message: err.Error()}}, nil
+	}
+
+	return GetJWZ200JSONResponse(proofs), nil
 }
 
 // Health is a method
@@ -599,4 +614,34 @@ func getStatusVerificationResponse(verification models.VerificationResponse) Sta
 		Jwz:         common.ToPointer(verification.Jwz),
 		JwzMetadata: jwzMetadata,
 	}
+}
+
+func getProofPayload(jwzToken string) (Proofs, error) {
+	token, err := jwz.Parse(jwzToken)
+	if err != nil {
+		return nil, err
+	}
+
+	var payload models.Payload
+	if err := json.Unmarshal(token.GetPayload(), &payload); err != nil {
+		return nil, err
+	}
+	if len(payload.Body.Scope) == 0 {
+		return nil, err
+	}
+
+	resp := make(Proofs, 0, len(payload.Body.Scope))
+	for _, scope := range payload.Body.Scope {
+		if scope.Vp.VerifiableCredential.CredentialSubject == nil {
+			continue
+		}
+		resp = append(resp, Proof{
+			CredentialSubject: scope.Vp.VerifiableCredential.CredentialSubject,
+			ProofType:         scope.Vp.Type,
+			SchemaContext:     scope.Vp.VerifiableCredential.Context,
+			SchemaType:        scope.Vp.VerifiableCredential.Type,
+		})
+	}
+
+	return resp, nil
 }

@@ -45,7 +45,28 @@ paths:
         '500':
           $ref: '#/components/responses/500'
 
-
+  /jwz:
+    post:
+      summary: Get JWZ Metadata
+      operationId: GetJWZ
+      tags:
+        - Public
+      requestBody:
+        content:
+          application/json:
+            schema:
+                $ref: '#/components/schemas/JWZRequest'
+      responses:
+        '200':
+          description: JWZ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Proofs'
+        '400':
+          $ref: '#/components/responses/400'
+        '500':
+          $ref: '#/components/responses/500'
 
   /sign-in:
     post:
@@ -554,6 +575,15 @@ components:
            }
         }
 
+    JWZRequest:
+      type: object
+      required:
+        - jwz
+      properties:
+        jwz:
+          type: string
+          example: jwz..
+
     SignInRequest:
       type: object
       required:
@@ -670,6 +700,35 @@ components:
         nullifier:
           type: string
           example: '1234'
+
+    Proofs:
+      type: array
+      items:
+          $ref: '#/components/schemas/Proof'
+
+    Proof:
+      type: object
+      required:
+        - proofType
+        - schemaContext
+        - schemaType
+        - credentialSubject
+      properties:
+        proofType:
+          type: string
+          example: 'VerifiablePresentation'
+        schemaContext:
+          type: array
+          items:
+            type: string
+            example: 'https://www.w3.org/2018/credentials/v1'
+        schemaType:
+          type: array
+          items:
+              type: string
+              example: 'KYCAgeCredential'
+        credentialSubject:
+          type: object
 
     UUID:
       type: string
