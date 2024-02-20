@@ -219,6 +219,45 @@ paths:
                         }
                       ]
                     }
+                OffChain-SIG-V3-Linked-Proofs:
+                  value:
+                    {
+                      "chainID": "80001",
+                      "skipClaimRevocationCheck": false,
+                      "scope": [
+                        {
+                          "circuitID": "credentialAtomicQueryV3-beta.0",
+                          "id": 1,
+                          "query": {
+                            "groupId": 1,
+                            "context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+                            "allowedIssuers": [ "*" ],
+                            "type": "KYCAgeCredential",
+                            "credentialSubject": {
+                              "birthday": {
+                                "$lt": 20201010
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "circuitID": "credentialAtomicQueryV3-beta.0",
+                          "id": 2,
+                          "query": {
+                            "groupId": 1,
+                            "context": "ipfs://QmaBJzpoYT2CViDx5ShJiuYLKXizrPEfXo8JqzrXCvG6oc",
+                            "allowedIssuers": [ "*" ],
+                            "type": "TestInteger01",
+                            "credentialSubject": {
+                              "position": {
+                                "$eq": 2
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    }
+
                 OnChain-SIG-V2:
                   value:
                     {
