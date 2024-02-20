@@ -27,18 +27,23 @@ VERIFIER_BACKEND_CACHE_EXPIRATION=30m
 ```json
 {
   "chainID": "80001",
-  "circuitID": "credentialAtomicQuerySigV2",
-  "skipClaimRevocationCheck": false, 
-  "query": {
-    "context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
-    "allowedIssuers": ["*"],
-    "type": "KYCAgeCredential",
-    "credentialSubject": {
-        "birthday": {
+  "skipClaimRevocationCheck": false,
+  "scope" : [
+    {
+      "ID": 1,
+      "circuitID": "credentialAtomicQuerySigV2",
+      "query": {
+        "context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+        "allowedIssuers": ["*"],
+        "type": "KYCAgeCredential",
+        "credentialSubject": {
+          "birthday": {
             "$eq": 19960424
+          }
         }
+      }
     }
-  }
+  ]
 }
 ```
 
@@ -46,34 +51,8 @@ VERIFIER_BACKEND_CACHE_EXPIRATION=30m
 
 ```json
 {
-    "qrCode": {
-        "body": {
-            "callbackUrl": "https://my-verifier-host/verifier/callback?sessionID=63622",
-            "reason": "test flow",
-            "scope": [
-                {
-                    "circuitId": "credentialAtomicQuerySigV2",
-                    "id": 1,
-                    "query": {
-                        "allowedIssuers": ["*"],
-                        "context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
-                        "credentialSubject": {
-                            "birthday": {
-                                "$eq": 19960424
-                            }
-                        },
-                        "type": "KYCAgeCredential"
-                    }
-                }
-            ]
-        },
-        "from": "did:polygonid:polygon:mumbai:2qH7TstpRRJHXNN4o49Fu9H2Qismku8hQeUxDVrjqT",
-        "id": "7f38a193-0918-4a48-9fac-36adfdb8b542",
-        "thid": "7f38a193-0918-4a48-9fac-36adfdb8b542",
-        "typ": "application/iden3comm-plain-json",
-        "type": "https://iden3-communication.io/authorization/1.0/request"
-    },
-    "sessionID": 63622
+  "qrCode": "iden3comm://?request_uri=https://verifier-backend.polygonid.me/qr-store?id=99f79449-cbe4-4c55-9532-3a4344c7fb9c",
+  "sessionID": "c9d8cebf-21cd-4c21-8232-a6ad6ee6a168"
 }
 ```
 
@@ -84,42 +63,52 @@ VERIFIER_BACKEND_CACHE_EXPIRATION=30m
 ```json
 {
   "chainID": "80001",
-  "circuitID": "credentialAtomicQueryMTPV2",
-  "skipClaimRevocationCheck": false, 
-  "query": {
-    "context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
-    "allowedIssuers": ["*"],
-    "type": "KYCAgeCredential",
-    "credentialSubject": {
-        "birthday": {
+  "skipClaimRevocationCheck": false,
+  "scope" : [
+    {
+      "ID": 1,
+      "circuitID": "credentialAtomicQueryMTPV2",
+      "query": {
+        "context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+        "allowedIssuers": ["*"],
+        "type": "KYCAgeCredential",
+        "credentialSubject": {
+          "birthday": {
             "$eq": 19960424
+          }
         }
+      }
     }
-  }
+  ]
 }
 ```
 
 > Note: `credentialAtomicQueryV3-beta.0` is the same circuit for BJJSignature2021 and Iden3SparseMerkleTreeProof. 
-> You must to specify the proofType in the query. 
+> You must specify the proofType in the query. 
 
 #### sign-in body example - credentialAtomicQueryV3-beta.0 - BJJSignature2021:
 
 ```json
 {
   "chainID": "80001",
-  "circuitID": "credentialAtomicQueryV3-beta.0",
   "skipClaimRevocationCheck": false,
-  "query": {
-    "context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
-    "allowedIssuers": ["*"],
-    "type": "KYCAgeCredential",
-    "credentialSubject": {
-      "birthday": {
-        "$eq": 19960424
+  "scope" : [
+    {
+      "Id": 1,
+      "circuitID": "credentialAtomicQueryV3-beta.0",
+      "query": {
+        "context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+        "allowedIssuers": ["*"],
+        "type": "KYCAgeCredential",
+        "credentialSubject": {
+          "birthday": {
+            "$eq": 19960424
+          }
+        },
+        "proofType": "BJJSignature2021"
       }
-    },
-    "proofType": "BJJSignature2021"
-  }
+    }
+  ]
 }
 ```
 
@@ -128,18 +117,94 @@ VERIFIER_BACKEND_CACHE_EXPIRATION=30m
 ```json
 {
   "chainID": "80001",
-  "circuitID": "credentialAtomicQueryV3-beta.0",
   "skipClaimRevocationCheck": false,
-  "query": {
-    "context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
-    "allowedIssuers": ["*"],
-    "type": "KYCAgeCredential",
-    "credentialSubject": {
-      "birthday": {
-        "$eq": 19960424
+  "scope" : [
+    {
+      "Id": 1,
+      "circuitID": "credentialAtomicQueryV3-beta.0",
+      "query": {
+        "context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+        "allowedIssuers": ["*"],
+        "type": "KYCAgeCredential",
+        "credentialSubject": {
+          "birthday": {
+            "$eq": 19960424
+          }
+        },
+        "proofType": "Iden3SparseMerkleTreeProof"
+      }
+    }
+  ]
+}
+```
+
+#### Multi-Query Example
+```json
+{
+  "chainID": "80001",
+  "skipClaimRevocationCheck": false,
+  "scope": [
+    {
+      "id" : 1,
+      "circuitID": "credentialAtomicQueryV3-beta.0",
+      "query" : {
+        "context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+        "allowedIssuers": ["*"],
+        "type": "KYCAgeCredential",
+        "credentialSubject": {
+          "birthday": {
+            "$eq": 19960424
+          }
+        },
+        "proofType": "BJJSignature2021" // Iden3SparseMerkleTreeProof or BJJSignature2021
       }
     },
-    "proofType": "Iden3SparseMerkleTreeProof"
+    {
+      "id" : 2,
+      "circuitID": "credentialAtomicQueryV3-beta.0",
+      "query" : {
+        "context": "ipfs://QmaBJzpoYT2CViDx5ShJiuYLKXizrPEfXo8JqzrXCvG6oc",
+        "allowedIssuers": ["*"],
+        "type": "TestInteger01",
+        "credentialSubject": {
+          "position": {
+            "$eq": 1
+          }
+        },
+        "proofType": "BJJSignature2021" // Iden3SparseMerkleTreeProof or BJJSignature2021
+      }
+    }
+  ]
+}
+```
+
+#### OnChain BJJSignature2021 credentialAtomicQueryV3OnChain-beta.0
+```json
+{
+  "reason": "test flow",
+  "to": null,
+  "scope" : [
+      {
+        "id": 3,
+        "circuitID": "credentialAtomicQueryV3OnChain-beta.0",
+        "query" : {
+            "context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+            "allowedIssuers": ["*"],
+            "type": "KYCAgeCredential",
+            "credentialSubject": {
+                "birthday": {
+                    
+                }
+            },
+            "proofType": "BJJSignature2021"
+        }
+      }
+  ],
+  "transactionData": {
+    "contractAddress": "0xD0Fd3E9fDF448e5B86Cc0f73E5Ee7D2F284884c0",
+    "methodID": "b68967e2",
+    "chainID": 80001,
+    "network": "polygon-mumbai"
   }
 }
 ```
