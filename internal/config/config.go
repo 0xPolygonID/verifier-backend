@@ -24,6 +24,7 @@ type Config struct {
 	KeyDIR               string   `envconfig:"keydir" default:"./keys"`
 	MumbaiSenderDID      string   `envconfig:"mumbai_sender_did" default:"0x2C1DdDc4C8b6BdAaE831eF04bF4FfDfA575d8bA7"`
 	MainSenderDID        string   `envconfig:"main_sender_did" default:"0x2C1DdDc4C8b6BdAaE831eF04bF4FfDfA575d8bA7"`
+	AmoySenderDID        string   `envconfig:"amoy_sender_did" default:"did:polygonid:polygon:amoy:2qV9QXdhXXmN5sKjN1YueMjxgRbnJcEGK2kGpvk3cq"`
 	IPFSURL              string   `envconfig:"ipfs_url" default:"https://gateway.pinata.cloud"`
 	ResolverSettingsPath string   `envconfig:"resolver_settings_path" default:"./resolvers_settings.yaml"`
 	CacheExpiration      CacheTTL `envconfig:"cache_expiration" default:"48h"`

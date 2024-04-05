@@ -38,6 +38,7 @@ const (
 	statusError          = "error"
 	mumbaiNetwork        = "80001"
 	mainnetNetwork       = "137"
+	amoyNetwork          = "80002"
 	defaultReason        = "for testing purposes"
 	defaultBigIntBase    = 10
 )
@@ -348,15 +349,23 @@ func getInvokeContractQRCode(request protocol.ContractInvokeRequestMessage) QRCo
 
 func validateOffChainRequest(request SignInRequestObject) error {
 	if request.Body.ChainID == nil {
-		return fmt.Errorf("field chainId is empty expected %s or %s", mumbaiNetwork, mainnetNetwork)
+		return fmt.Errorf("field chainId is empty expected %s or %s or %s", mumbaiNetwork, mainnetNetwork, amoyNetwork)
 	}
 
-	if *request.Body.ChainID != "80001" && *request.Body.ChainID != "137" {
-		return fmt.Errorf("field chainId value is wrong, got %s, expected %s or %s", *request.Body.ChainID, mumbaiNetwork, mainnetNetwork)
+	if err := validateNetWork(*request.Body.ChainID); err != nil {
+		return err
 	}
 
 	if err := validateRequestQuery(true, request.Body.Scope); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func validateNetWork(chainID string) error {
+	if chainID != mumbaiNetwork && chainID != mainnetNetwork && chainID != amoyNetwork {
+		return fmt.Errorf("field chainID value is wrong, got %s, expected %s or %s or %s", chainID, mumbaiNetwork, mainnetNetwork, amoyNetwork)
 	}
 
 	return nil
@@ -557,10 +566,14 @@ func getParams(params ScopeParams) (map[string]interface{}, error) {
 }
 
 func getSenderID(chainID string, cfg config.Config) string {
-	if chainID == mumbaiNetwork {
+	switch chainID {
+	case mumbaiNetwork:
 		return cfg.MumbaiSenderDID
+	case mainnetNetwork:
+		return cfg.MainSenderDID
+	default:
+		return cfg.AmoySenderDID
 	}
-	return cfg.MainSenderDID
 }
 
 func getUri(cfg config.Config, sessionID uuid.UUID) string {

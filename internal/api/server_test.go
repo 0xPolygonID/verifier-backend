@@ -635,7 +635,7 @@ func TestSignIn(t *testing.T) {
 			},
 			expected: expected{
 				httpCode:     http.StatusBadRequest,
-				ErrorMessage: "field chainId value is wrong, got invalid, expected 80001 or 137",
+				ErrorMessage: "field chainID value is wrong, got invalid, expected 80001 or 137 or 80002",
 			},
 		},
 		{

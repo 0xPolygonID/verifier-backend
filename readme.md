@@ -26,7 +26,7 @@ VERIFIER_BACKEND_CACHE_EXPIRATION=30m
 
 ```json
 {
-  "chainID": "80001",
+  "chainID": "80002",
   "circuitID": "credentialAtomicQuerySigV2",
   "skipClaimRevocationCheck": false, 
   "query": {
@@ -83,7 +83,7 @@ VERIFIER_BACKEND_CACHE_EXPIRATION=30m
 
 ```json
 {
-  "chainID": "80001",
+  "chainID": "80002",
   "circuitID": "credentialAtomicQueryMTPV2",
   "skipClaimRevocationCheck": false, 
   "query": {
@@ -106,7 +106,7 @@ VERIFIER_BACKEND_CACHE_EXPIRATION=30m
 
 ```json
 {
-  "chainID": "80001",
+  "chainID": "80002",
   "circuitID": "credentialAtomicQueryV3-beta.1",
   "skipClaimRevocationCheck": false,
   "query": {
@@ -127,7 +127,7 @@ VERIFIER_BACKEND_CACHE_EXPIRATION=30m
 
 ```json
 {
-  "chainID": "80001",
+  "chainID": "80002",
   "circuitID": "credentialAtomicQueryV3-beta.1",
   "skipClaimRevocationCheck": false,
   "query": {

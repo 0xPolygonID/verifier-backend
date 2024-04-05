@@ -13,6 +13,7 @@ env:
   ENVIRONMENT: testing
   ECR_REPOSITORY: verifier_backend
   POLYGON_MUMBAI_CONTRACT_ADDRESS: "0x134B1BE34911E39A8397ec6289782989729807a4"
+  POLYGON_AMOY_CONTRACT_ADDRESS: "0x8c99F13dc5083b1E4c16f269735EaD4cFbc4970d"
   POLYGON_MAIN_CONTRACT_ADDRESS: "0x624ce98D2d27b20b8f8d521723Df8fC4db71D79D"
 
 jobs:
@@ -44,6 +45,9 @@ jobs:
       - name: Build file with supported networks
         run: |
           echo -e "polygon:" > resolvers_settings.yaml
+          echo -e "  amoy:" >> resolvers_settings.yaml
+          echo -e "    contractAddress: ${{ env.POLYGON_AMOY_CONTRACT_ADDRESS }}" >> resolvers_settings.yaml
+          echo -e "    networkURL: ${{ secrets.POLYGON_AMOY_NODE_URL }}" >> resolvers_settings.yaml
           echo -e "  mumbai:" >> resolvers_settings.yaml
           echo -e "    contractAddress: ${{ env.POLYGON_MUMBAI_CONTRACT_ADDRESS }}" >> resolvers_settings.yaml
           echo -e "    networkURL: ${{ secrets.POLYGON_NODE_URL }}" >> resolvers_settings.yaml

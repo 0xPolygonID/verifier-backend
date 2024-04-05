@@ -95,7 +95,7 @@ paths:
                 OffChain-SIG-V2:
                   value:
                     {
-                      "chainID": "80001",
+                      "chainID": "80002",
                       "skipClaimRevocationCheck": false,
                       "scope": [
                         {
@@ -117,7 +117,7 @@ paths:
                 OffChain-MTP-V2:
                   value:
                     {
-                      "chainID": "80001",
+                      "chainID": "80002",
                       "skipClaimRevocationCheck": false,
                       "scope": [
                         {
@@ -139,7 +139,7 @@ paths:
                 OffChain-SIG-V3:
                   value:
                     {
-                      "chainID": "80001",
+                      "chainID": "80002",
                       "skipClaimRevocationCheck": false,
                       "scope": [
                         {
@@ -161,7 +161,7 @@ paths:
                 OffChain-SIG-V3-Nullifiers:
                   value:
                     {
-                      "chainID": "80001",
+                      "chainID": "80002",
                       "skipClaimRevocationCheck": false,
                       "scope": [
                         {
@@ -186,7 +186,7 @@ paths:
                 OffChain-SIG-V3-Multiple-Queries:
                   value:
                     {
-                      "chainID": "80001",
+                      "chainID": "80002",
                       "skipClaimRevocationCheck": false,
                       "scope": [
                         {
@@ -222,7 +222,7 @@ paths:
                 OffChain-SIG-V3-Linked-Proofs:
                   value:
                     {
-                      "chainID": "80001",
+                      "chainID": "80002",
                       "skipClaimRevocationCheck": false,
                       "scope": [
                         {
@@ -261,7 +261,7 @@ paths:
                 OnChain-SIG-V2:
                   value:
                     {
-                      "chainID": "80001",
+                      "chainID": "80002",
                       "skipClaimRevocationCheck": false,
                       "scope": [
                         {
@@ -273,51 +273,51 @@ paths:
                             "type": "KYCAgeCredential",
                             "credentialSubject": {
                               "birthday": {
-                                "$eq": 19960424
+                                "$lt": 20020101
                               }
                             }
                           }
                         }
                       ],
                       "transactionData": {
-                        "contractAddress": "0xE826f870852D7eeeB79B2C030298f9B5DAA8C8a3",
+                        "contractAddress": "0x2b23e5cF70D133fFaA7D8ba61E1bAC4637253880",
                         "methodID": "b68967e2",
-                        "chainID": 80001,
-                        "network": "polygon-mumbai"
+                        "chainID": 80002,
+                        "network": "polygon-amoy"
                       }
                     }
                 OnChain-SIG-V3:
                   value:
                     {
-                      "chainID": "80001",
+                      "chainID": "80002",
                       "skipClaimRevocationCheck": false,
                       "scope": [
                         {
                           "circuitID": "credentialAtomicQueryV3OnChain-beta.1",
-                          "id": 1,
+                          "id": 3,
                           "query": {
                             "context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
                             "allowedIssuers": [ "*" ],
                             "type": "KYCAgeCredential",
                             "credentialSubject": {
                               "birthday": {
-                                "$eq": 19960424
+                                "$lt": 20020101
                               }
                             }
                           }
                         }
                       ],
                       "transactionData": {
-                        "contractAddress": "0xE826f870852D7eeeB79B2C030298f9B5DAA8C8a3",
+                        "contractAddress": "0x36eB0E70a456c310D8d8d15ae01F6D5A7C15309A",
                         "methodID": "b68967e2",
-                        "chainID": 80001,
-                        "network": "polygon-mumbai"
+                        "chainID": 80002,
+                        "network": "polygon-amoy"
                       }
                     }
                 OffChain-SIG-V3-Own-Credential:
                   value:
                     {
-                      "chainID": "80001",
+                      "chainID": "80002",
                       "skipClaimRevocationCheck": false,
                       "scope": [
                         {
@@ -454,7 +454,7 @@ components:
              }
           ]
        },
-       "from":"did:polygonid:polygon:mumbai:2qH7TstpRRJHXNN4o49Fu9H2Qismku8hQeUxDVrjqT"
+       "from":"did:polygonid:polygon:amoy:2qH7TstpRRJHXNN4o49Fu9H2Qismku8hQeUxDVrjqT"
       } '
 
 
@@ -489,7 +489,7 @@ components:
       properties:
         userDID:
           type: string
-          example: 'did:polygonid:polygon:mumbai:2qH7TstpRRJHXNN4o49Fu9H2Qismku8hQeUxDVrjqT'
+          example: 'did:polygonid:polygon:amoy:2qH7TstpRRJHXNN4o49Fu9H2Qismku8hQeUxDVrjqT'
         nullifiers:
           type: array
           x-omitempty: false
@@ -542,10 +542,10 @@ components:
           $ref: '#/components/schemas/Body'
         from:
           type: string
-          example: 'did:polygonid:polygon:mumbai:2qH7TstpRRJHXNN4o49Fu9H2Qismku8hQeUxDVrjqT'
+          example: 'did:polygonid:polygon:amoy:2qH7TstpRRJHXNN4o49Fu9H2Qismku8hQeUxDVrjqT'
         to:
           type: string
-          example: 'did:polygonid:polygon:mumbai:2qEATqfECVbCBzq9EhJpPSiv1xtJRpbMBKDaNM68Ci'
+          example: 'did:polygonid:polygon:amoy:2qEATqfECVbCBzq9EhJpPSiv1xtJRpbMBKDaNM68Ci'
 
     Body:
       type: object
@@ -623,9 +623,10 @@ components:
           type: string
           description: |
             Only required when using off-chain verification
+            `80002`: `amoy`
             `80001`: `mumbai`
             `137` : `mainnet`
-          example: '80001'
+          example: '80002'
         reason:
           type: string
           example: 'test flow'
@@ -679,16 +680,16 @@ components:
       properties:
         contract_address:
           type: string
-          example: '0xE826f870852D7eeeB79B2C030298f9B5DAA8C8a3'
+          example: '0x2b23e5cF70D133fFaA7D8ba61E1bAC4637253880 '
         method_id:
           type: string
           example: 'b68967e2'
         chain_id:
           type: integer
-          example: 80001
+          example: 80002
         network:
           type: string
-          example: 'polygon-mumbai'
+          example: 'polygon-amoy'
 
     TransactionData:
       type: object
@@ -702,16 +703,16 @@ components:
       properties:
         contractAddress:
           type: string
-          example: '0xE826f870852D7eeeB79B2C030298f9B5DAA8C8a3'
+          example: '0x2b23e5cF70D133fFaA7D8ba61E1bAC4637253880 '
         methodID:
           type: string
           example: 'b68967e2'
         chainID:
           type: integer
-          example: 80001
+          example: 80002
         network:
           type: string
-          example: 'polygon-mumbai'
+          example: 'polygon-amoy'
 
     JWZProofs:
       type: object
