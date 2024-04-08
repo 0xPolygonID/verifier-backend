@@ -294,7 +294,7 @@ paths:
                       "scope": [
                         {
                           "circuitID": "credentialAtomicQueryV3OnChain-beta.1",
-                          "id": 3,
+                          "id": 200,
                           "query": {
                             "context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
                             "allowedIssuers": [ "*" ],
@@ -308,7 +308,7 @@ paths:
                         }
                       ],
                       "transactionData": {
-                        "contractAddress": "0x36eB0E70a456c310D8d8d15ae01F6D5A7C15309A",
+                        "contractAddress": "0xc5Cd536cb9Cc3BD24829502A39BE593354986dc4",
                         "methodID": "b68967e2",
                         "chainID": 80002,
                         "network": "polygon-amoy"

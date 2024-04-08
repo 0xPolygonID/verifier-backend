@@ -89,6 +89,7 @@ type ScopeRequest struct {
 // SignInRequest defines model for SignInRequest.
 type SignInRequest struct {
 	// ChainID Only required when using off-chain verification
+	// `80002`: `amoy`
 	// `80001`: `mumbai`
 	// `137` : `mainnet`
 	ChainID *string        `json:"chainID,omitempty"`
