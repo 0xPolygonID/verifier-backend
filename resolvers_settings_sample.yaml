@@ -1,10 +1,20 @@
 polygon:
   amoy:
     contractAddress: 0x1a4cC30f2aA0377b0c3bc9848766D90cb4404124
-    networkURL: https://polygon-amoy.g.alchemy.com/v2/xaP2XXXX
-  mumbai:
-    contractAddress: 0x134B1BE34911E39A8397ec6289782989729807a4
-    networkURL: https://polygon-mumbai.g.alchemy.com/v2/xaP2XXXX
+    networkURL: https://polygon-amoy.g.alchemy.com/v2/XXXXX
+    chainID: 80002
+    networkFlag: 0b0001_0011
+    did: did:polygonid:polygon:amoy:2qV9QXdhXXmN5sKjN1YueMjxgRbnJcEGK2kGpvk3cq
   main:
     contractAddress: 0x624ce98D2d27b20b8f8d521723Df8fC4db71D79D
-    networkURL: https://polygon-mainnet.g.alchemy.com/v2/X2HIXXX
+    networkURL: https://polygon-mainnet.g.alchemy.com/v2/XXXXX
+    chainID: 137
+    networkFlag: 0b0001_0001
+    did: did:polygonid:polygon:main:2q4Q7F7tM1xpwUTgWivb6TgKX3vWirsE3mqymuYjVv
+#customBlockchain:
+#  customNetwork:
+#    contractAddress: { replace with state contract }
+#    networkURL: { replace with custom RPC }
+#    chainID: { replace with chain ID }
+#    networkFlag: { replace with network flag, e.g 0b0011_0001 }
+#    did: { replace with verifier's did }

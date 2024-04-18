@@ -9,9 +9,11 @@ require (
 	github.com/go-chi/cors v1.2.1
 	github.com/golangci/golangci-lint v1.55.1
 	github.com/google/uuid v1.6.0
+	github.com/iden3/contracts-abi/state/go/abi v1.0.1
 	github.com/iden3/go-circuits/v2 v2.2.0
 	github.com/iden3/go-iden3-auth/v2 v2.2.2
 	github.com/iden3/go-iden3-core/v2 v2.1.0
+	github.com/iden3/go-jwz/v2 v2.0.2
 	github.com/iden3/go-schema-processor/v2 v2.3.3
 	github.com/iden3/iden3comm/v2 v2.3.2
 	github.com/ipfs/go-ipfs-api v0.7.0
@@ -20,6 +22,7 @@ require (
 	github.com/oapi-codegen/runtime v1.1.1
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/piprate/json-gold v0.5.1-0.20230111113000-6ddbe6e6f19f
+	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.9.0
 	gopkg.in/yaml.v3 v3.0.1
@@ -122,9 +125,7 @@ require (
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hexops/gotextdiff v1.0.3 // indirect
 	github.com/holiman/uint256 v1.2.4 // indirect
-	github.com/iden3/contracts-abi/state/go/abi v1.0.1 // indirect
 	github.com/iden3/go-iden3-crypto v0.0.16 // indirect
-	github.com/iden3/go-jwz/v2 v2.0.2 // indirect
 	github.com/iden3/go-merkletree-sql/v2 v2.0.6 // indirect
 	github.com/iden3/go-rapidsnark/prover v0.0.10 // indirect
 	github.com/iden3/go-rapidsnark/types v0.0.3 // indirect
@@ -194,7 +195,6 @@ require (
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.9 // indirect
 	github.com/perimeterx/marshmallow v1.1.4 // indirect
-	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/polyfloyd/go-errorlint v1.4.5 // indirect
 	github.com/pquerna/cachecontrol v0.2.0 // indirect

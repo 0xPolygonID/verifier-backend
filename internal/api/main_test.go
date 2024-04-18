@@ -17,12 +17,10 @@ var (
 
 func TestMain(m *testing.M) {
 	cfg = config.Config{
-		Host:            "http://localhost",
-		ApiPort:         "3000",
-		KeyDIR:          "./keys",
-		MumbaiSenderDID: "did:polygonid:polygon:mumbai:2qH7TstpRRJHXNN4o49Fu9H2Qismku8hQeUxDVrjqT",
-		MainSenderDID:   "did:polygonid:polygon:main:2qH7TstpRRJHXNN4o49Fu9H2Qismku8hQeUxDVrjqT",
-		IPFSURL:         "https://gateway.pinata.cloud",
+		Host:    "http://localhost",
+		ApiPort: "3000",
+		KeyDIR:  "./keys",
+		IPFSURL: "https://gateway.pinata.cloud",
 		ResolverSettings: config.ResolverSettings{
 			"polygon": {
 				"mumbai": {

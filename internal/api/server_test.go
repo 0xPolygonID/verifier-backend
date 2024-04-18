@@ -17,9 +17,11 @@ import (
 	"github.com/0xPolygonID/verifier-backend/internal/common"
 )
 
+const mumbaiSenderDID = "did:polygonid:polygon:mumbai:2qCU58EJgrELdThzMyykDwT5kWff6XSbpSWtTQ7oS8"
+
 func TestSignIn(t *testing.T) {
 	ctx := context.Background()
-	server := New(cfg, keysLoader)
+	server := New(cfg, nil, map[string]string{"80001": mumbaiSenderDID})
 
 	type expected struct {
 		httpCode     int
@@ -78,7 +80,7 @@ func TestSignIn(t *testing.T) {
 							},
 						},
 					},
-					From: cfg.MumbaiSenderDID,
+					From: mumbaiSenderDID,
 					To:   nil,
 					Typ:  string(packers.MediaTypePlainMessage),
 					Type: string(protocol.AuthorizationRequestMessageType),
@@ -130,7 +132,7 @@ func TestSignIn(t *testing.T) {
 							},
 						},
 					},
-					From: cfg.MumbaiSenderDID,
+					From: mumbaiSenderDID,
 					To:   common.ToPointer("did:polygonid:polygon:mumbai:2qEATqfECVbCBzq9EhJpPSiv1xtJRpbMBKDaNM68Ci"),
 					Typ:  string(packers.MediaTypePlainMessage),
 					Type: string(protocol.AuthorizationRequestMessageType),
@@ -181,7 +183,7 @@ func TestSignIn(t *testing.T) {
 							},
 						},
 					},
-					From: cfg.MumbaiSenderDID,
+					From: mumbaiSenderDID,
 					To:   nil,
 					Typ:  string(packers.MediaTypePlainMessage),
 					Type: string(protocol.AuthorizationRequestMessageType),
@@ -234,7 +236,7 @@ func TestSignIn(t *testing.T) {
 							},
 						},
 					},
-					From: cfg.MumbaiSenderDID,
+					From: mumbaiSenderDID,
 					To:   nil,
 					Typ:  string(packers.MediaTypePlainMessage),
 					Type: string(protocol.AuthorizationRequestMessageType),
@@ -293,7 +295,7 @@ func TestSignIn(t *testing.T) {
 							},
 						},
 					},
-					From: cfg.MumbaiSenderDID,
+					From: mumbaiSenderDID,
 					To:   nil,
 					Typ:  string(packers.MediaTypePlainMessage),
 					Type: string(protocol.AuthorizationRequestMessageType),
@@ -420,7 +422,7 @@ func TestSignIn(t *testing.T) {
 							},
 						},
 					},
-					From: cfg.MumbaiSenderDID,
+					From: mumbaiSenderDID,
 					To:   nil,
 					Typ:  "application/iden3comm-plain-json",
 					Type: "https://iden3-communication.io/authorization/1.0/request",
@@ -611,12 +613,13 @@ func TestSignIn(t *testing.T) {
 			},
 		},
 		{
-			name: "invalid request - invalid ChainID",
+			name: "sender not found for chainID invalid",
 			body: SignInRequestObject{
 				Body: &SignInJSONRequestBody{
-					ChainID: common.ToPointer("invalid"),
+					ChainID: common.ToPointer("12345"),
 					Scope: []ScopeRequest{
 						{
+							Id:        uint32(12),
 							CircuitId: string(circuits.AtomicQueryV3CircuitID),
 							Query: jsonToMap(t, `{
 							"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
@@ -635,7 +638,7 @@ func TestSignIn(t *testing.T) {
 			},
 			expected: expected{
 				httpCode:     http.StatusBadRequest,
-				ErrorMessage: "field chainID value is wrong, got invalid, expected 80001 or 137 or 80002",
+				ErrorMessage: "sender not found for chainID 12345",
 			},
 		},
 		{
@@ -920,7 +923,7 @@ func TestSignIn(t *testing.T) {
 							},
 						},
 					},
-					From: cfg.MumbaiSenderDID,
+					From: mumbaiSenderDID,
 					To:   nil,
 					Typ:  "application/iden3comm-plain-json",
 					Type: "https://iden3-communication.io/authorization/1.0/request",

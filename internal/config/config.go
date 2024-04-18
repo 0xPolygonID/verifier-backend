@@ -22,9 +22,6 @@ type Config struct {
 	Host                 string   `envconfig:"host" default:"http://localhost"`
 	ApiPort              string   `envconfig:"port" default:"3009"`
 	KeyDIR               string   `envconfig:"keydir" default:"./keys"`
-	MumbaiSenderDID      string   `envconfig:"mumbai_sender_did" default:"0x2C1DdDc4C8b6BdAaE831eF04bF4FfDfA575d8bA7"`
-	MainSenderDID        string   `envconfig:"main_sender_did" default:"0x2C1DdDc4C8b6BdAaE831eF04bF4FfDfA575d8bA7"`
-	AmoySenderDID        string   `envconfig:"amoy_sender_did" default:"did:polygonid:polygon:amoy:2qV9QXdhXXmN5sKjN1YueMjxgRbnJcEGK2kGpvk3cq"`
 	IPFSURL              string   `envconfig:"ipfs_url" default:"https://gateway.pinata.cloud"`
 	ResolverSettingsPath string   `envconfig:"resolver_settings_path" default:"./resolvers_settings.yaml"`
 	CacheExpiration      CacheTTL `envconfig:"cache_expiration" default:"48h"`
@@ -32,9 +29,15 @@ type Config struct {
 }
 
 // ResolverSettings holds the resolver settings
-type ResolverSettings map[string]map[string]struct {
+type ResolverSettings map[string]map[string]ResolverSettingsAttrs
+
+// ResolverSettingsAttrs holds the resolver settings attributes
+type ResolverSettingsAttrs struct {
 	ContractAddress string `yaml:"contractAddress"`
 	NetworkURL      string `yaml:"networkURL"`
+	ChainID         string `yaml:"chainID"`
+	NetworkFlag     byte   `yaml:"networkFlag"`
+	DID             string `yaml:"did"`
 }
 
 // Load loads the configuration from the environment

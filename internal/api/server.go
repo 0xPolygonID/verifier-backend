@@ -16,9 +16,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/iden3/go-circuits/v2"
 	auth "github.com/iden3/go-iden3-auth/v2"
-	"github.com/iden3/go-iden3-auth/v2/loaders"
 	"github.com/iden3/go-iden3-auth/v2/pubsignals"
-	"github.com/iden3/go-iden3-auth/v2/state"
 	core "github.com/iden3/go-iden3-core/v2"
 	"github.com/iden3/go-iden3-core/v2/w3c"
 	"github.com/iden3/iden3comm/v2/protocol"
@@ -27,7 +25,6 @@ import (
 
 	"github.com/0xPolygonID/verifier-backend/internal/common"
 	"github.com/0xPolygonID/verifier-backend/internal/config"
-	"github.com/0xPolygonID/verifier-backend/internal/loader"
 	"github.com/0xPolygonID/verifier-backend/internal/models"
 )
 
@@ -45,20 +42,22 @@ const (
 
 // Server represents the API server
 type Server struct {
-	keyLoader *loaders.FSKeyLoader
-	cfg       config.Config
-	qrStore   *QRcodeStore
-	cache     *cache.Cache
+	cfg        config.Config
+	qrStore    *QRcodeStore
+	cache      *cache.Cache
+	verifier   *auth.Verifier
+	senderDIDs map[string]string
 }
 
 // New creates a new API server
-func New(cfg config.Config, keyLoader *loaders.FSKeyLoader) *Server {
+func New(cfg config.Config, verifier *auth.Verifier, senderDIDs map[string]string) *Server {
 	c := cache.New(cfg.CacheExpiration.AsDuration(), cfg.CacheExpiration.AsDuration())
 	return &Server{
-		cfg:       cfg,
-		keyLoader: keyLoader,
-		qrStore:   NewQRCodeStore(c),
-		cache:     c,
+		cfg:        cfg,
+		qrStore:    NewQRCodeStore(c),
+		cache:      c,
+		verifier:   verifier,
+		senderDIDs: senderDIDs,
 	}
 }
 
@@ -106,19 +105,7 @@ func (s *Server) Callback(ctx context.Context, request CallbackRequestObject) (C
 		}, nil
 	}
 
-	w3cLoader := loader.NewW3CDocumentLoader(nil, s.cfg.IPFSURL)
-
-	resolvers := s.parseResolverSettings()
-	verifier, err := auth.NewVerifier(s.keyLoader, resolvers, auth.WithDocumentLoader(w3cLoader))
-	if err != nil {
-		log.WithFields(log.Fields{
-			"sessionID": sessionID,
-			"err":       err,
-		}).Error("failed to create verifier")
-		return nil, err
-	}
-
-	authRespMsg, err := verifier.FullVerify(ctx, *request.Body,
+	authRespMsg, err := s.verifier.FullVerify(ctx, *request.Body,
 		authRequest.(protocol.AuthorizationRequestMessage),
 		pubsignals.WithAcceptedStateTransitionDelay(stateTransitionDelay))
 	if err != nil {
@@ -172,7 +159,7 @@ func (s *Server) SignIn(_ context.Context, request SignInRequestObject) (SignInR
 
 	switch circuits.CircuitID(request.Body.Scope[0].CircuitId) {
 	case circuits.AtomicQuerySigV2CircuitID, circuits.AtomicQueryMTPV2CircuitID, circuits.AtomicQueryV3CircuitID:
-		authReq, err := getAuthRequestOffChain(request, s.cfg, sessionID)
+		authReq, err := s.getAuthRequestOffChain(request, sessionID)
 		if err != nil {
 			log.Error(err)
 			return SignIn400JSONResponse{N400JSONResponse{err.Error()}}, nil
@@ -188,7 +175,7 @@ func (s *Server) SignIn(_ context.Context, request SignInRequestObject) (SignInR
 			SessionID: sessionID,
 		}, nil
 	case circuits.AtomicQuerySigV2OnChainCircuitID, circuits.AtomicQueryMTPV2OnChainCircuitID, circuits.AtomicQueryV3OnChainCircuitID:
-		invokeReq, err := getContractInvokeRequestOnChain(request, s.cfg)
+		invokeReq, err := s.getContractInvokeRequestOnChain(request)
 		if err != nil {
 			log.Error(err)
 			return SignIn400JSONResponse{N400JSONResponse{err.Error()}}, nil
@@ -261,19 +248,6 @@ func writeFile(path string, mimeType string, w http.ResponseWriter) {
 	w.Header().Set("Content-Type", mimeType)
 	w.WriteHeader(http.StatusOK)
 	_, _ = w.Write(f)
-}
-
-// parseResolverSettings parses the resolver settings from the config file
-func (s *Server) parseResolverSettings() map[string]pubsignals.StateResolver {
-	resolvers := map[string]pubsignals.StateResolver{}
-	for chainName, chainSettings := range s.cfg.ResolverSettings {
-		for networkName, networkSettings := range chainSettings {
-			prefix := fmt.Sprintf("%s:%s", chainName, networkName)
-			resolver := state.NewETHResolver(networkSettings.NetworkURL, networkSettings.ContractAddress)
-			resolvers[prefix] = resolver
-		}
-	}
-	return resolvers
 }
 
 func getAuthReqQRCode(request protocol.AuthorizationRequestMessage) QRCode {
@@ -352,20 +326,8 @@ func validateOffChainRequest(request SignInRequestObject) error {
 		return fmt.Errorf("field chainId is empty expected %s or %s or %s", mumbaiNetwork, mainnetNetwork, amoyNetwork)
 	}
 
-	if err := validateNetWork(*request.Body.ChainID); err != nil {
-		return err
-	}
-
 	if err := validateRequestQuery(true, request.Body.Scope); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func validateNetWork(chainID string) error {
-	if chainID != mumbaiNetwork && chainID != mainnetNetwork && chainID != amoyNetwork {
-		return fmt.Errorf("field chainID value is wrong, got %s, expected %s or %s or %s", chainID, mumbaiNetwork, mainnetNetwork, amoyNetwork)
 	}
 
 	return nil
@@ -420,13 +382,18 @@ func validateRequestQuery(offChainRequest bool, scope []ScopeRequest) error {
 	return nil
 }
 
-func getAuthRequestOffChain(req SignInRequestObject, cfg config.Config, sessionID uuid.UUID) (protocol.AuthorizationRequestMessage, error) {
+func (s *Server) getAuthRequestOffChain(req SignInRequestObject, sessionID uuid.UUID) (protocol.AuthorizationRequestMessage, error) {
 	if err := validateOffChainRequest(req); err != nil {
 		return protocol.AuthorizationRequestMessage{}, err
 	}
 
+	senderDID, err := s.getSenderDID(*req.Body.ChainID)
+	if err != nil {
+		return protocol.AuthorizationRequestMessage{}, err
+	}
+
 	id := uuid.NewString()
-	authReq := auth.CreateAuthorizationRequest(getReason(req.Body.Reason), getSenderID(*req.Body.ChainID, cfg), getUri(cfg, sessionID))
+	authReq := auth.CreateAuthorizationRequest(getReason(req.Body.Reason), senderDID, getUri(s.cfg, sessionID))
 	authReq.ID = id
 	authReq.ThreadID = id
 	authReq.To = ""
@@ -481,7 +448,7 @@ func checkOnChainRequest(req SignInRequestObject) error {
 	return nil
 }
 
-func getContractInvokeRequestOnChain(req SignInRequestObject, cfg config.Config) (protocol.ContractInvokeRequestMessage, error) {
+func (s *Server) getContractInvokeRequestOnChain(req SignInRequestObject) (protocol.ContractInvokeRequestMessage, error) {
 	if err := checkOnChainRequest(req); err != nil {
 		return protocol.ContractInvokeRequestMessage{}, err
 	}
@@ -509,8 +476,13 @@ func getContractInvokeRequestOnChain(req SignInRequestObject, cfg config.Config)
 		ChainID:         req.Body.TransactionData.ChainID,
 		Network:         req.Body.TransactionData.Network,
 	}
+	senderDID, err := s.getSenderDID(strconv.Itoa(transactionData.ChainID))
+	if err != nil {
+		return protocol.ContractInvokeRequestMessage{}, err
+	}
+
+	authReq := auth.CreateContractInvokeRequest(getReason(req.Body.Reason), senderDID, transactionData, mtpProofRequests...)
 	id := uuid.NewString()
-	authReq := auth.CreateContractInvokeRequest(getReason(req.Body.Reason), getSenderID(strconv.Itoa(transactionData.ChainID), cfg), transactionData, mtpProofRequests...)
 	authReq.ID = id
 	authReq.ThreadID = id
 	authReq.To = ""
@@ -565,15 +537,13 @@ func getParams(params ScopeParams) (map[string]interface{}, error) {
 	return map[string]interface{}{"nullifierSessionId": nullifierSessionID.String()}, nil
 }
 
-func getSenderID(chainID string, cfg config.Config) string {
-	switch chainID {
-	case mumbaiNetwork:
-		return cfg.MumbaiSenderDID
-	case mainnetNetwork:
-		return cfg.MainSenderDID
-	default:
-		return cfg.AmoySenderDID
+func (s *Server) getSenderDID(chainID string) (string, error) {
+	val, ok := s.senderDIDs[chainID]
+	if !ok {
+		return "", fmt.Errorf("sender not found for chainID %s", chainID)
 	}
+
+	return val, nil
 }
 
 func getUri(cfg config.Config, sessionID uuid.UUID) string {
