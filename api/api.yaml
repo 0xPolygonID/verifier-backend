@@ -5,12 +5,6 @@ info:
     Documentation for the Backend Verifier API
   version: "1"
 
-servers:
-  - description: Local
-    url: http://localhost:3010
-  - description: Dev
-    url: https://verifier-backend-dev.polygonid.me
-
 tags:
   - name: Public
     description: Public endpoints for integrators
