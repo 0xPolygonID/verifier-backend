@@ -486,6 +486,7 @@ components:
       type: object
       required:
         - userDID
+        - verifiablePresentations
       properties:
         userDID:
           type: string
@@ -495,6 +496,8 @@ components:
           x-omitempty: false
           items:
             $ref: '#/components/schemas/JWZProofs'
+        verifiablePresentations:
+          $ref: '#/components/schemas/VerifiablePresentations'
 
 
 
@@ -731,6 +734,35 @@ components:
         nullifier:
           type: string
           example: '1234'
+
+    VerifiablePresentations:
+      type: array
+      items:
+        $ref: '#/components/schemas/VerifiablePresentation'
+
+    VerifiablePresentation:
+      type: object
+      required:
+        - proofType
+        - schemaContext
+        - schemaType
+        - credentialSubject
+      properties:
+        proofType:
+          type: string
+          example: 'VerifiablePresentation'
+        schemaContext:
+          type: array
+          items:
+            type: string
+            example: 'https://www.w3.org/2018/credentials/v1'
+        schemaType:
+          type: array
+          items:
+            type: string
+            example: 'KYCAgeCredential'
+        credentialSubject:
+          type: object
 
     UUID:
       type: string

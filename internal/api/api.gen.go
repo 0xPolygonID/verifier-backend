@@ -39,8 +39,9 @@ type Health = map[string]interface{}
 
 // JWZMetadata defines model for JWZMetadata.
 type JWZMetadata struct {
-	Nullifiers *[]JWZProofs `json:"nullifiers"`
-	UserDID    string       `json:"userDID"`
+	Nullifiers              *[]JWZProofs            `json:"nullifiers"`
+	UserDID                 string                  `json:"userDID"`
+	VerifiablePresentations VerifiablePresentations `json:"verifiablePresentations"`
 }
 
 // JWZProofs defines model for JWZProofs.
@@ -137,6 +138,17 @@ type TransactionDataResponse struct {
 
 // UUID defines model for UUID.
 type UUID = uuid.UUID
+
+// VerifiablePresentation defines model for VerifiablePresentation.
+type VerifiablePresentation struct {
+	CredentialSubject map[string]interface{} `json:"credentialSubject"`
+	ProofType         string                 `json:"proofType"`
+	SchemaContext     []string               `json:"schemaContext"`
+	SchemaType        []string               `json:"schemaType"`
+}
+
+// VerifiablePresentations defines model for VerifiablePresentations.
+type VerifiablePresentations = []VerifiablePresentation
 
 // Id defines model for id.
 type Id = uuid.UUID

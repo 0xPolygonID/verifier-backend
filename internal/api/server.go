@@ -19,6 +19,7 @@ import (
 	"github.com/iden3/go-iden3-auth/v2/pubsignals"
 	core "github.com/iden3/go-iden3-core/v2"
 	"github.com/iden3/go-iden3-core/v2/w3c"
+	"github.com/iden3/go-jwz/v2"
 	"github.com/iden3/iden3comm/v2/protocol"
 	"github.com/patrickmn/go-cache"
 	log "github.com/sirupsen/logrus"
@@ -33,9 +34,6 @@ const (
 	statusPending        = "pending"
 	statusSuccess        = "success"
 	statusError          = "error"
-	mumbaiNetwork        = "80001"
-	mainnetNetwork       = "137"
-	amoyNetwork          = "80002"
 	defaultReason        = "for testing purposes"
 	defaultBigIntBase    = 10
 )
@@ -201,14 +199,8 @@ func (s *Server) Status(_ context.Context, request StatusRequestObject) (StatusR
 	id := request.Params.SessionID
 	item, ok := s.cache.Get(id.String())
 	if !ok {
-		log.WithFields(log.Fields{
-			"sessionID": id,
-		}).Error("sessionID not found")
-		return Status404JSONResponse{
-			N404JSONResponse: N404JSONResponse{
-				Message: "sessionID not found",
-			},
-		}, nil
+		log.WithFields(log.Fields{"sessionID": id}).Error("sessionID not found")
+		return Status404JSONResponse{N404JSONResponse: N404JSONResponse{Message: "sessionID not found"}}, nil
 	}
 
 	switch value := item.(type) {
@@ -222,9 +214,43 @@ func (s *Server) Status(_ context.Context, request StatusRequestObject) (StatusR
 			Message: common.ToPointer(value.Error()),
 		}, nil
 	case models.VerificationResponse:
-		return getStatusVerificationResponse(value), nil
+		vps, err := getVerifiablePresentations(value.Jwz)
+		if err != nil {
+			log.WithFields(log.Fields{"err": err}).Error("failed to get verifiable presentations")
+			return Status200JSONResponse{
+				Status:  statusError,
+				Message: common.ToPointer(err.Error()),
+			}, nil
+		}
+		return getStatusVerificationResponse(value, vps), nil
 	}
 	return nil, nil
+}
+
+func getVerifiablePresentations(jwzToken string) (VerifiablePresentations, error) {
+	token, err := jwz.Parse(jwzToken)
+	if err != nil {
+		return nil, err
+	}
+
+	var payload models.JWZPayload
+	if err := json.Unmarshal(token.GetPayload(), &payload); err != nil {
+		return nil, err
+	}
+
+	resp := make(VerifiablePresentations, 0, len(payload.Body.Scope))
+	for _, scope := range payload.Body.Scope {
+		if scope.Vp.VerifiableCredential.CredentialSubject == nil {
+			continue
+		}
+		resp = append(resp, VerifiablePresentation{
+			CredentialSubject: scope.Vp.VerifiableCredential.CredentialSubject,
+			ProofType:         scope.Vp.Type,
+			SchemaContext:     scope.Vp.VerifiableCredential.Context,
+			SchemaType:        scope.Vp.VerifiableCredential.Type,
+		})
+	}
+	return resp, nil
 }
 
 func documentation(w http.ResponseWriter, _ *http.Request) {
@@ -323,7 +349,7 @@ func getInvokeContractQRCode(request protocol.ContractInvokeRequestMessage) QRCo
 
 func validateOffChainRequest(request SignInRequestObject) error {
 	if request.Body.ChainID == nil {
-		return fmt.Errorf("field chainId is empty expected %s or %s or %s", mumbaiNetwork, mainnetNetwork, amoyNetwork)
+		return errors.New("field chainId is empty")
 	}
 
 	if err := validateRequestQuery(true, request.Body.Scope); err != nil {
@@ -592,8 +618,13 @@ func getVerificationResponseScopes(scopes []protocol.ZeroKnowledgeProofResponse)
 	return resp, nil
 }
 
-func getStatusVerificationResponse(verification models.VerificationResponse) Status200JSONResponse {
-	jwzMetadata := &JWZMetadata{UserDID: verification.UserDID}
+func getStatusVerificationResponse(verification models.VerificationResponse, vcs VerifiablePresentations) Status200JSONResponse {
+	jwzMetadata := &JWZMetadata{
+		UserDID: verification.UserDID,
+	}
+	if len(vcs) > 0 {
+		jwzMetadata.VerifiablePresentations = vcs
+	}
 
 	if len(verification.Scopes) > 0 {
 		nullifiers := make([]JWZProofs, 0, len(verification.Scopes))
@@ -608,8 +639,8 @@ func getStatusVerificationResponse(verification models.VerificationResponse) Sta
 	}
 
 	return Status200JSONResponse{
-		Status:      statusSuccess,
 		Jwz:         common.ToPointer(verification.Jwz),
 		JwzMetadata: jwzMetadata,
+		Status:      statusSuccess,
 	}
 }

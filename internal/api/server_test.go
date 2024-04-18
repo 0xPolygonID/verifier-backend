@@ -17,7 +17,10 @@ import (
 	"github.com/0xPolygonID/verifier-backend/internal/common"
 )
 
-const mumbaiSenderDID = "did:polygonid:polygon:mumbai:2qCU58EJgrELdThzMyykDwT5kWff6XSbpSWtTQ7oS8"
+const (
+	mumbaiSenderDID = "did:polygonid:polygon:mumbai:2qCU58EJgrELdThzMyykDwT5kWff6XSbpSWtTQ7oS8"
+	mumbaiNetwork   = "80001"
+)
 
 func TestSignIn(t *testing.T) {
 	ctx := context.Background()
