@@ -10,9 +10,22 @@ on:
 env:
   AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
   ECR_REPOSITORY: verifier_backend
-  POLYGON_MUMBAI_CONTRACT_ADDRESS: "0x134B1BE34911E39A8397ec6289782989729807a4"
+
   POLYGON_AMOY_CONTRACT_ADDRESS: "0x1a4cC30f2aA0377b0c3bc9848766D90cb4404124"
+  POLYGON_AMOY_SENDER_DID: "did:polygonid:polygon:amoy:2qV9QXdhXXmN5sKjN1YueMjxgRbnJcEGK2kGpvk3cq"
+  POLYGON_AMOY_NETWORK_FLAG: "0b0001_0011"
+  POLYGON_AMOY_CHAIN_ID: "80002"
+
   POLYGON_MAIN_CONTRACT_ADDRESS: "0x624ce98D2d27b20b8f8d521723Df8fC4db71D79D"
+  POLYGON_MAIN_SENDER_DID: "did:polygonid:polygon:main:2q4Q7F7tM1xpwUTgWivb6TgKX3vWirsE3mqymuYjVv"
+  POLYGON_MAIN_NETWORK_FLAG: "0b0001_0001"
+  POLYGON_MAIN_CHAIN_ID: "137"
+
+  CAMINO_COLUMBUS_CONTRACT_ADDRESS: "0x34eCe5eCe59B978C95147bBa6db8fb62F127e601"
+  CAMINO_COLUMBUS_NODE_URL: "https://columbus.camino.network/ext/bc/C/rpc"
+  CAMINO_COLUMBUS_SENDER_DID: "did:polygonid:camino:columbus:3E1DZ5qrNCJctmUS3nphEkfsvqYs1kL5oGTtEpYiov"
+  CAMINO_COLUMBUS_NETWORK_FLAG: "0b10000011"
+  CAMINO_COLUMBUS_CHAIN_ID: "501"
 
 jobs:
   build-backend:
@@ -48,12 +61,22 @@ jobs:
           echo -e "  amoy:" >> resolvers_settings.yaml
           echo -e "    contractAddress: ${{ env.POLYGON_AMOY_CONTRACT_ADDRESS }}" >> resolvers_settings.yaml
           echo -e "    networkURL: ${{ secrets.POLYGON_AMOY_NODE_URL }}" >> resolvers_settings.yaml
-          echo -e "  mumbai:" >> resolvers_settings.yaml
-          echo -e "    contractAddress: ${{ env.POLYGON_MUMBAI_CONTRACT_ADDRESS }}" >> resolvers_settings.yaml
-          echo -e "    networkURL: ${{ secrets.POLYGON_NODE_URL }}" >> resolvers_settings.yaml
+          echo -e "    chainID: ${{ env.POLYGON_AMOY_CHAIN_ID }}" >> resolvers_settings.yaml
+          echo -e "    networkFlag: ${{ env.POLYGON_AMOY_NETWORK_FLAG }}" >> resolvers_settings.yaml
+          echo -e "    did: ${{ env.POLYGON_AMOY_SENDER_DID }}" >> resolvers_settings.yaml
           echo -e "  main:" >> resolvers_settings.yaml
           echo -e "    contractAddress: ${{ env.POLYGON_MAIN_CONTRACT_ADDRESS }}" >> resolvers_settings.yaml
           echo -e "    networkURL: ${{ secrets.POLYGON_MAINET_NODE_URL }}" >> resolvers_settings.yaml
+          echo -e "    chainID: ${{ env.POLYGON_MAIN_CHAIN_ID }}" >> resolvers_settings.yaml
+          echo -e "    networkFlag: ${{ env.POLYGON_MAIN_NETWORK_FLAG }}" >> resolvers_settings.yaml
+          echo -e "    did: ${{ env.POLYGON_MAIN_SENDER_DID }}" >> resolvers_settings.yaml
+          echo -e "camino:" > resolvers_settings.yaml
+          echo -e "  columbus:" >> resolvers_settings.yaml
+          echo -e "    contractAddress: ${{ env.CAMINO_COLUMBUS_CONTRACT_ADDRESS }}" >> resolvers_settings.yaml
+          echo -e "    networkURL: ${{ env.CAMINO_COLUMBUS_NODE_URL }}" >> resolvers_settings.yaml
+          echo -e "    chainID: ${{ env.CAMINO_COLUMBUS_CHAIN_ID }}" >> resolvers_settings.yaml
+          echo -e "    networkFlag: ${{ env.CAMINO_COLUMBUS_NETWORK_FLAG }}" >> resolvers_settings.yaml
+          echo -e "    did: ${{ env.CAMINO_COLUMBUS_SENDER_DID }}" >> resolvers_settings.yaml
           cat resolvers_settings.yaml
       - run: make build/docker
 
