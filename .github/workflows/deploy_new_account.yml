@@ -70,7 +70,7 @@ jobs:
           echo -e "    chainID: ${{ env.POLYGON_MAIN_CHAIN_ID }}" >> resolvers_settings.yaml
           echo -e "    networkFlag: ${{ env.POLYGON_MAIN_NETWORK_FLAG }}" >> resolvers_settings.yaml
           echo -e "    did: ${{ env.POLYGON_MAIN_SENDER_DID }}" >> resolvers_settings.yaml
-          echo -e "camino:" > resolvers_settings.yaml
+          echo -e "camino:" >> resolvers_settings.yaml
           echo -e "  columbus:" >> resolvers_settings.yaml
           echo -e "    contractAddress: ${{ env.CAMINO_COLUMBUS_CONTRACT_ADDRESS }}" >> resolvers_settings.yaml
           echo -e "    networkURL: ${{ env.CAMINO_COLUMBUS_NODE_URL }}" >> resolvers_settings.yaml
