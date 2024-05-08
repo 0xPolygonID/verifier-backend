@@ -17,6 +17,7 @@ import (
 	"github.com/iden3/go-iden3-auth/v2/pubsignals"
 	"github.com/iden3/go-iden3-auth/v2/state"
 	core "github.com/iden3/go-iden3-core/v2"
+	"github.com/patrickmn/go-cache"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/0xPolygonID/verifier-backend/internal/api"
@@ -56,7 +57,8 @@ func main() {
 		return
 	}
 
-	apiServer := api.New(*cfg, verifier, senderDIDs)
+	c := cache.New(cfg.CacheExpiration.AsDuration(), cfg.CacheExpiration.AsDuration())
+	apiServer := api.New(*cfg, verifier, senderDIDs, c)
 	api.HandlerFromMux(api.NewStrictHandlerWithOptions(apiServer, nil,
 		api.StrictHTTPServerOptions{RequestErrorHandlerFunc: errors.RequestErrorHandlerFunc}), mux)
 	api.RegisterStatic(mux)
