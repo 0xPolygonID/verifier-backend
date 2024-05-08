@@ -11,6 +11,7 @@ import (
 	"github.com/iden3/go-circuits/v2"
 	"github.com/iden3/iden3comm/v2/packers"
 	"github.com/iden3/iden3comm/v2/protocol"
+	"github.com/patrickmn/go-cache"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -22,9 +23,79 @@ const (
 	mumbaiNetwork   = "80001"
 )
 
+func TestStatus(t *testing.T) {
+	ctx := context.Background()
+	c := cache.New(cfg.CacheExpiration.AsDuration(), cfg.CacheExpiration.AsDuration())
+	server := New(cfg, nil, map[string]string{"80001": mumbaiSenderDID}, c)
+
+	sessionID := uuid.New()
+	sessionID2 := uuid.New()
+
+	c.Set(sessionID2.String(), struct {
+		WrongType string
+	}{
+		WrongType: "a wrong type",
+	}, cache.DefaultExpiration)
+
+	type expected struct {
+		httpCode     int
+		ErrorMessage string
+	}
+
+	type testConfig struct {
+		name     string
+		request  StatusRequestObject
+		expected expected
+	}
+
+	for _, tc := range []testConfig{
+		{
+			name: "should return error - session ID not found",
+			request: StatusRequestObject{
+				Params: StatusParams{
+					SessionID: sessionID,
+				},
+			},
+			expected: expected{
+				httpCode:     http.StatusNotFound,
+				ErrorMessage: "sessionID not found",
+			},
+		},
+		{
+			name: "should return an error wrong object in the cache",
+			request: StatusRequestObject{
+				Params: StatusParams{
+					SessionID: sessionID2,
+				},
+			},
+			expected: expected{
+				httpCode:     http.StatusNotFound,
+				ErrorMessage: "unexpected object in the session storage",
+			},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			rr, err := server.Status(ctx, tc.request)
+			require.NoError(t, err)
+			switch tc.expected.httpCode {
+			case http.StatusOK:
+				_, ok := rr.(Status200JSONResponse)
+				require.True(t, ok)
+			case http.StatusNotFound:
+				response, ok := rr.(Status404JSONResponse)
+				require.True(t, ok)
+				assert.Equal(t, tc.expected.ErrorMessage, response.Message)
+			default:
+				t.Errorf("unexpected http code: %d", tc.expected.httpCode)
+			}
+		})
+	}
+}
+
 func TestSignIn(t *testing.T) {
 	ctx := context.Background()
-	server := New(cfg, nil, map[string]string{"80001": mumbaiSenderDID})
+	c := cache.New(cfg.CacheExpiration.AsDuration(), cfg.CacheExpiration.AsDuration())
+	server := New(cfg, nil, map[string]string{"80001": mumbaiSenderDID}, c)
 
 	type expected struct {
 		httpCode     int
