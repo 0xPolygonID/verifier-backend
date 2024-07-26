@@ -48,12 +48,11 @@ type Server struct {
 }
 
 // New creates a new API server
-func New(cfg config.Config, verifier *auth.Verifier, senderDIDs map[string]string) *Server {
-	c := cache.New(cfg.CacheExpiration.AsDuration(), cfg.CacheExpiration.AsDuration())
+func New(cfg config.Config, verifier *auth.Verifier, senderDIDs map[string]string, cache *cache.Cache) *Server {
 	return &Server{
 		cfg:        cfg,
-		qrStore:    NewQRCodeStore(c),
-		cache:      c,
+		qrStore:    NewQRCodeStore(cache),
+		cache:      cache,
 		verifier:   verifier,
 		senderDIDs: senderDIDs,
 	}
@@ -223,8 +222,13 @@ func (s *Server) Status(_ context.Context, request StatusRequestObject) (StatusR
 			}, nil
 		}
 		return getStatusVerificationResponse(value, vps), nil
+	default:
+		return Status404JSONResponse{
+			N404JSONResponse{
+				Message: "unexpected object in the session storage",
+			},
+		}, nil
 	}
-	return nil, nil
 }
 
 func getVerifiablePresentations(jwzToken string) (VerifiablePresentations, error) {
