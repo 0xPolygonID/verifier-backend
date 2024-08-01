@@ -1,6 +1,6 @@
 openapi: 3.1.0
 info:
-  title: Polygon ID
+  title: Privado ID
   description: |
     Documentation for the Backend Verifier API
   version: "1"
