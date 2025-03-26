@@ -536,7 +536,7 @@ func TestSignIn(t *testing.T) {
 			},
 			expected: expected{
 				httpCode:     http.StatusBadRequest,
-				ErrorMessage: "field circuitId value is wrong, got credentialAtomicQuerySigV2OnChain, expected credentialAtomicQuerySigV2 or credentialAtomicQueryMTPV2 or credentialAtomicQueryV3-beta.1",
+				ErrorMessage: "field circuitId value is wrong, got credentialAtomicQuerySigV2OnChain, expected credentialAtomicQuerySigV2 or credentialAtomicQueryMTPV2 or credentialAtomicQueryV3-beta.1 or linkedMultiQuery10-beta.1",
 			},
 		},
 		{
@@ -586,7 +586,7 @@ func TestSignIn(t *testing.T) {
 			},
 			expected: expected{
 				httpCode:     http.StatusBadRequest,
-				ErrorMessage: "field circuitId value is wrong, got credentialAtomicQueryV3-beta.1, expected credentialAtomicQuerySigV2OnChain or credentialAtomicQueryMTPV2OnChain or credentialAtomicQueryV3OnChain-beta.1",
+				ErrorMessage: "field circuitId value is wrong, got credentialAtomicQueryV3-beta.1, expected credentialAtomicQuerySigV2OnChain or credentialAtomicQueryMTPV2OnChain or credentialAtomicQueryV3OnChain-beta.1 or linkedMultiQuery10-beta.1",
 			},
 		},
 		{
@@ -676,7 +676,7 @@ func TestSignIn(t *testing.T) {
 			},
 			expected: expected{
 				httpCode:     http.StatusBadRequest,
-				ErrorMessage: "field circuitId value is wrong, got credentialAtomicQueryV3-beta.1111, expected credentialAtomicQuerySigV2 or credentialAtomicQueryMTPV2 or credentialAtomicQueryV3-beta.1",
+				ErrorMessage: "field circuitId value is wrong, got credentialAtomicQueryV3-beta.1111, expected credentialAtomicQuerySigV2 or credentialAtomicQueryMTPV2 or credentialAtomicQueryV3-beta.1 or linkedMultiQuery10-beta.1",
 			},
 		},
 		{
