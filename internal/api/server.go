@@ -8,7 +8,6 @@ import (
 	"math/big"
 	"net/http"
 	"os"
-	"strconv"
 	"time"
 
 	common2 "github.com/ethereum/go-ethereum/common"
@@ -154,9 +153,9 @@ func (s *Server) SignIn(_ context.Context, request SignInRequestObject) (SignInR
 		log.Error("field scope is empty")
 		return SignIn400JSONResponse{N400JSONResponse{Message: "field scope is empty"}}, nil
 	}
-
-	switch circuits.CircuitID(request.Body.Scope[0].CircuitId) {
-	case circuits.AtomicQuerySigV2CircuitID, circuits.AtomicQueryMTPV2CircuitID, circuits.AtomicQueryV3CircuitID:
+	// detect onchain or offchain request based on transaction data
+	// validation of circuits is done inside
+	if request.Body.TransactionData == nil {
 		authReq, err := s.getAuthRequestOffChain(request, sessionID)
 		if err != nil {
 			log.Error(err)
@@ -172,7 +171,7 @@ func (s *Server) SignIn(_ context.Context, request SignInRequestObject) (SignInR
 			QrCode:    fmt.Sprintf("iden3comm://?request_uri=%s%s?id=%s", s.cfg.Host, "/qr-store", qrID.String()),
 			SessionID: sessionID,
 		}, nil
-	case circuits.AtomicQuerySigV2OnChainCircuitID, circuits.AtomicQueryMTPV2OnChainCircuitID, circuits.AtomicQueryV3OnChainCircuitID:
+	} else {
 		invokeReq, err := s.getContractInvokeRequestOnChain(request)
 		if err != nil {
 			log.Error(err)
@@ -188,9 +187,6 @@ func (s *Server) SignIn(_ context.Context, request SignInRequestObject) (SignInR
 			QrCode:    fmt.Sprintf("iden3comm://?request_uri=%s%s?id=%s", s.cfg.Host, "/qr-store", qrID.String()),
 			SessionID: sessionID,
 		}, nil
-	default:
-		log.Errorf("invalid circuitID: %s", request.Body.Scope[0].CircuitId)
-		return SignIn400JSONResponse{N400JSONResponse{Message: "invalid circuitID"}}, nil
 	}
 }
 
@@ -348,8 +344,12 @@ func getInvokeContractQRCode(request protocol.ContractInvokeRequestMessage) QRCo
 }
 
 func validateOffChainRequest(request SignInRequestObject) error {
-	if request.Body.ChainID == nil {
-		return errors.New("field chainId is empty")
+
+	if request.Body.From == nil && request.Body.ChainID == nil {
+		return errors.New("field from is empty, chainId is empty. One of them must be defined for request")
+	}
+	if request.Body.From != nil && request.Body.ChainID != nil {
+		return errors.New("field from is not empty, chainId is not empty. Only one of them must be defined for request")
 	}
 
 	if err := validateRequestQuery(true, request.Body.Scope); err != nil {
@@ -377,14 +377,14 @@ func validateRequestQuery(offChainRequest bool, scope []ScopeRequest) error {
 
 		circuitID := circuits.CircuitID(scope.CircuitId)
 		if offChainRequest {
-			if circuitID != circuits.AtomicQuerySigV2CircuitID && circuitID != circuits.AtomicQueryMTPV2CircuitID && circuitID != circuits.AtomicQueryV3CircuitID {
-				return fmt.Errorf("field circuitId value is wrong, got %s, expected %s or %s or %s", scope.CircuitId, circuits.AtomicQuerySigV2CircuitID, circuits.AtomicQueryMTPV2CircuitID, circuits.AtomicQueryV3CircuitID)
+			if circuitID != circuits.AtomicQuerySigV2CircuitID && circuitID != circuits.AtomicQueryMTPV2CircuitID && circuitID != circuits.AtomicQueryV3CircuitID && circuitID != circuits.LinkedMultiQuery10CircuitID {
+				return fmt.Errorf("field circuitId value is wrong, got %s, expected %s or %s or %s or %s", scope.CircuitId, circuits.AtomicQuerySigV2CircuitID, circuits.AtomicQueryMTPV2CircuitID, circuits.AtomicQueryV3CircuitID, circuits.LinkedMultiQuery10CircuitID)
 			}
 		}
 
 		if !offChainRequest {
-			if circuitID != circuits.AtomicQuerySigV2OnChainCircuitID && circuitID != circuits.AtomicQueryMTPV2OnChainCircuitID && circuitID != circuits.AtomicQueryV3OnChainCircuitID {
-				return fmt.Errorf("field circuitId value is wrong, got %s, expected %s or %s or %s", scope.CircuitId, circuits.AtomicQuerySigV2OnChainCircuitID, circuits.AtomicQueryMTPV2OnChainCircuitID, circuits.AtomicQueryV3OnChainCircuitID)
+			if circuitID != circuits.AtomicQuerySigV2OnChainCircuitID && circuitID != circuits.AtomicQueryMTPV2OnChainCircuitID && circuitID != circuits.AtomicQueryV3OnChainCircuitID && circuitID != circuits.LinkedMultiQuery10CircuitID {
+				return fmt.Errorf("field circuitId value is wrong, got %s, expected %s or %s or %s or %s", scope.CircuitId, circuits.AtomicQuerySigV2OnChainCircuitID, circuits.AtomicQueryMTPV2OnChainCircuitID, circuits.AtomicQueryV3OnChainCircuitID, circuits.LinkedMultiQuery10CircuitID)
 			}
 		}
 
@@ -412,8 +412,7 @@ func (s *Server) getAuthRequestOffChain(req SignInRequestObject, sessionID uuid.
 	if err := validateOffChainRequest(req); err != nil {
 		return protocol.AuthorizationRequestMessage{}, err
 	}
-
-	senderDID, err := s.getSenderDID(*req.Body.ChainID)
+	senderDID, err := s.getSenderDID(*req.Body)
 	if err != nil {
 		return protocol.AuthorizationRequestMessage{}, err
 	}
@@ -502,23 +501,17 @@ func (s *Server) getContractInvokeRequestOnChain(req SignInRequestObject) (proto
 		ChainID:         req.Body.TransactionData.ChainID,
 		Network:         req.Body.TransactionData.Network,
 	}
-	senderDID, err := s.getSenderDID(strconv.Itoa(transactionData.ChainID))
-	if err != nil {
-		return protocol.ContractInvokeRequestMessage{}, err
-	}
-
-	authReq := auth.CreateContractInvokeRequest(getReason(req.Body.Reason), senderDID, transactionData, mtpProofRequests...)
-	id := uuid.NewString()
-	authReq.ID = id
-	authReq.ThreadID = id
-	authReq.To = ""
-
 	verifierDID, err := buildOnchainVerifierDID(transactionData)
 	if err != nil {
 		return protocol.ContractInvokeRequestMessage{}, err
 	}
 
-	authReq.From = verifierDID.String()
+	authReq := auth.CreateContractInvokeRequest(getReason(req.Body.Reason), verifierDID.String(), transactionData, mtpProofRequests...)
+	id := uuid.NewString()
+	authReq.ID = id
+	authReq.ThreadID = id
+	authReq.To = ""
+
 	if req.Body.To != nil {
 		authReq.To = *req.Body.To
 	}
@@ -563,13 +556,27 @@ func getParams(params ScopeParams) (map[string]interface{}, error) {
 	return map[string]interface{}{"nullifierSessionId": nullifierSessionID.String()}, nil
 }
 
-func (s *Server) getSenderDID(chainID string) (string, error) {
-	val, ok := s.senderDIDs[chainID]
-	if !ok {
-		return "", fmt.Errorf("sender not found for chainID %s", chainID)
+func (s *Server) getSenderDID(body SignInJSONRequestBody) (string, error) {
+
+	var senderDID string
+	if body.From != nil {
+
+		_, err := w3c.ParseDID(*body.From)
+		if err != nil {
+			return "", fmt.Errorf("field from must be a valid did, got %s", *body.From)
+
+		}
+		senderDID = *body.From
+	} else {
+		var ok bool
+		senderDID, ok = s.senderDIDs[*body.ChainID]
+		if !ok {
+			return "", fmt.Errorf("sender not found for chainID %s", *body.ChainID)
+		}
+
 	}
 
-	return val, nil
+	return senderDID, nil
 }
 
 func getUri(cfg config.Config, sessionID uuid.UUID) string {

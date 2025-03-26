@@ -576,6 +576,12 @@ func TestSignIn(t *testing.T) {
 						  }`),
 						},
 					},
+					TransactionData: &TransactionData{
+						ChainID:         80002,
+						ContractAddress: "0x123",
+						MethodID:        "0x123",
+						Network:         "polygon:amoy",
+					},
 				},
 			},
 			expected: expected{
@@ -651,6 +657,7 @@ func TestSignIn(t *testing.T) {
 					ChainID: common.ToPointer("80002"),
 					Scope: []ScopeRequest{
 						{
+							Id:        1,
 							CircuitId: "credentialAtomicQueryV3-beta.1111",
 							Query: jsonToMap(t, `{
 							"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
@@ -669,7 +676,7 @@ func TestSignIn(t *testing.T) {
 			},
 			expected: expected{
 				httpCode:     http.StatusBadRequest,
-				ErrorMessage: "invalid circuitID",
+				ErrorMessage: "field circuitId value is wrong, got credentialAtomicQueryV3-beta.1111, expected credentialAtomicQuerySigV2 or credentialAtomicQueryMTPV2 or credentialAtomicQueryV3-beta.1",
 			},
 		},
 		{
@@ -755,35 +762,6 @@ func TestSignIn(t *testing.T) {
 			expected: expected{
 				httpCode:     http.StatusBadRequest,
 				ErrorMessage: "type cannot be empty",
-			},
-		},
-		{
-			name: "invalid request - invalid transaction data",
-			body: SignInRequestObject{
-				Body: &SignInJSONRequestBody{
-					ChainID: common.ToPointer("80002"),
-					Scope: []ScopeRequest{
-						{
-							Id:        1,
-							CircuitId: "credentialAtomicQuerySigV2OnChain",
-							Query: jsonToMap(t, `{
-							"context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
-							"allowedIssuers": ["*"],
-							"type": "KYCAgeCredential",
-							"credentialSubject": {
-								"birthday": {
-									"$eq": 19960424
-								}
-							},
-							"proofType": "BJJSignature2021"
-						  }`),
-						},
-					},
-				},
-			},
-			expected: expected{
-				httpCode:     http.StatusBadRequest,
-				ErrorMessage: "field transactionData is empty",
 			},
 		},
 		{
@@ -954,6 +932,12 @@ func TestSignIn(t *testing.T) {
 							"proofType": "BJJSignature2021"
 						  }`),
 						},
+					},
+					TransactionData: &TransactionData{
+						ChainID:         80002,
+						ContractAddress: "0x123",
+						MethodID:        "123",
+						Network:         "123",
 					},
 				},
 			},
