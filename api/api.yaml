@@ -21,7 +21,7 @@ paths:
         - Internal
       responses:
         200:
-          description: success an..d returns the documentation in HTML format
+          description: success and returns the documentation in HTML format
 
   /health:
     get:
