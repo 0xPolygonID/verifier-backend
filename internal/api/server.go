@@ -543,13 +543,26 @@ func buildOnchainVerifierDID(transactionData protocol.TransactionData) (*w3c.DID
 }
 
 func getParams(params ScopeParams) (map[string]interface{}, error) {
-	val, ok := params["nullifierSessionID"]
-	if !ok {
-		return nil, errors.New("nullifierSessionID is empty")
+
+	// nullifierSessionId check
+	valOld, okOld := params["nullifierSessionID"]
+
+	valNew, okNew := params["nullifierSessionId"]
+	if !okOld && !okNew {
+		return nil, errors.New("nullifier session id  is empty in given params")
+	}
+
+	var valNullifierSessionID interface{}
+
+	if okOld {
+		valNullifierSessionID = valOld
+	}
+	if okNew {
+		valNullifierSessionID = valNew
 	}
 
 	nullifierSessionID := new(big.Int)
-	if _, ok := nullifierSessionID.SetString(val.(string), defaultBigIntBase); !ok {
+	if _, ok := nullifierSessionID.SetString(valNullifierSessionID.(string), defaultBigIntBase); !ok {
 		return nil, errors.New("nullifierSessionID is not a valid big integer")
 	}
 

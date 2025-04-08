@@ -175,6 +175,55 @@ paths:
                         }
                       ]
                     }
+                OffChain-SIG-V3-Nullifiers-new:
+                    value:
+                      {
+                        "chainID": "80002",
+                        "scope": [
+                          {
+                            "circuitID": "credentialAtomicQueryV3-beta.1",
+                            "id": 1,
+                            "params": {
+                              "nullifierSessionId": "723443290439234342342423423423423"
+                            },
+                            "query": {
+                              "context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+                              "allowedIssuers": [ "*" ],
+                              "type": "KYCAgeCredential",
+                              "credentialSubject": {
+                                "birthday": {
+                                  "$lt": 20201010
+                                }
+                              }
+                            }
+                          }
+                        ]
+                      }
+                OffChain-SIG-V3-CircuitId-asCamelCase:
+                  value:
+                    {
+                      "chainID": "80002",
+                      "scope": [
+                        {
+                          "circuitId": "credentialAtomicQueryV3-beta.1",
+                          "id": 1,
+                          "params": {
+                            "nullifierSessionId": "723443290439234342342423423423423"
+                          },
+                          "query": {
+                            "context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+                            "allowedIssuers": [ "*" ],
+                            "type": "KYCAgeCredential",
+                            "credentialSubject": {
+                              "birthday": {
+                                "$lt": 20201010
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    }
+
                 OffChain-SIG-V3-Multiple-Queries:
                   value:
                     {
