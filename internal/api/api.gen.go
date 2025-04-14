@@ -94,6 +94,7 @@ type SignInRequest struct {
 	// `80001`: `mumbai`
 	// `137` : `mainnet`
 	ChainID *string        `json:"chainID,omitempty"`
+	From    *string        `json:"from,omitempty"`
 	Reason  *string        `json:"reason,omitempty"`
 	Scope   []ScopeRequest `json:"scope"`
 	To      *string        `json:"to,omitempty"`

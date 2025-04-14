@@ -78,6 +78,8 @@ paths:
         V3 circuits:
         - `credentialAtomicQueryV3OnChain-beta.1`: MTP and SIG credentials verifications
 
+        LinkedMQuery circuit:
+        - `linkedMultiQuery10-beta.1`: for linked verifications.
       tags:
         - Public
       requestBody:
@@ -90,7 +92,6 @@ paths:
                   value:
                     {
                       "chainID": "80002",
-                      "skipClaimRevocationCheck": false,
                       "scope": [
                         {
                           "circuitID": "credentialAtomicQuerySigV2",
@@ -112,7 +113,6 @@ paths:
                   value:
                     {
                       "chainID": "80002",
-                      "skipClaimRevocationCheck": false,
                       "scope": [
                         {
                           "circuitID": "credentialAtomicQueryMTPV2",
@@ -134,7 +134,6 @@ paths:
                   value:
                     {
                       "chainID": "80002",
-                      "skipClaimRevocationCheck": false,
                       "scope": [
                         {
                           "circuitID": "credentialAtomicQueryV3-beta.1",
@@ -156,7 +155,6 @@ paths:
                   value:
                     {
                       "chainID": "80002",
-                      "skipClaimRevocationCheck": false,
                       "scope": [
                         {
                           "circuitID": "credentialAtomicQueryV3-beta.1",
@@ -177,11 +175,59 @@ paths:
                         }
                       ]
                     }
+                OffChain-SIG-V3-Nullifiers-new:
+                    value:
+                      {
+                        "chainID": "80002",
+                        "scope": [
+                          {
+                            "circuitID": "credentialAtomicQueryV3-beta.1",
+                            "id": 1,
+                            "params": {
+                              "nullifierSessionId": "723443290439234342342423423423423"
+                            },
+                            "query": {
+                              "context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+                              "allowedIssuers": [ "*" ],
+                              "type": "KYCAgeCredential",
+                              "credentialSubject": {
+                                "birthday": {
+                                  "$lt": 20201010
+                                }
+                              }
+                            }
+                          }
+                        ]
+                      }
+                OffChain-SIG-V3-CircuitId-asCamelCase:
+                  value:
+                    {
+                      "chainID": "80002",
+                      "scope": [
+                        {
+                          "circuitId": "credentialAtomicQueryV3-beta.1",
+                          "id": 1,
+                          "params": {
+                            "nullifierSessionId": "723443290439234342342423423423423"
+                          },
+                          "query": {
+                            "context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+                            "allowedIssuers": [ "*" ],
+                            "type": "KYCAgeCredential",
+                            "credentialSubject": {
+                              "birthday": {
+                                "$lt": 20201010
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    }
+
                 OffChain-SIG-V3-Multiple-Queries:
                   value:
                     {
                       "chainID": "80002",
-                      "skipClaimRevocationCheck": false,
                       "scope": [
                         {
                           "circuitID": "credentialAtomicQueryV3-beta.1",
@@ -217,7 +263,6 @@ paths:
                   value:
                     {
                       "chainID": "80002",
-                      "skipClaimRevocationCheck": false,
                       "scope": [
                         {
                           "circuitID": "credentialAtomicQueryV3-beta.1",
@@ -256,7 +301,6 @@ paths:
                   value:
                     {
                       "chainID": "80002",
-                      "skipClaimRevocationCheck": false,
                       "scope": [
                         {
                           "circuitID": "credentialAtomicQuerySigV2OnChain",
@@ -284,7 +328,6 @@ paths:
                   value:
                     {
                       "chainID": "80002",
-                      "skipClaimRevocationCheck": false,
                       "scope": [
                         {
                           "circuitID": "credentialAtomicQueryV3OnChain-beta.1",
@@ -312,7 +355,6 @@ paths:
                   value:
                     {
                       "chainID": "80002",
-                      "skipClaimRevocationCheck": false,
                       "scope": [
                         {
                           "circuitID": "credentialAtomicQueryV3-beta.1",
@@ -324,6 +366,64 @@ paths:
                             ],
                             "type": "TestInteger01",
                             "proofType": "BJJSignature2021"
+                          }
+                        }
+                      ]
+                    }
+                OffChain-SIG-V3-LinkedMultiQuery-Proofs:
+                  value:
+                    {
+                      "chainID": "80002",
+                      "scope": [
+                        {
+                          "circuitID": "credentialAtomicQueryV3-beta.1",
+                          "id": 1,
+                          "query": {
+                            "groupId": 1,
+                            "context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+                            "allowedIssuers": [ "*" ],
+                            "type": "KYCAgeCredential",
+                            "credentialSubject": {
+                              "birthday": {
+                                "$lt": 20201010
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "circuitID": "linkedMultiQuery10-beta.1",
+                          "id": 2,
+                          "query": {
+                            "groupId": 1,
+                            "context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+                            "allowedIssuers": [ "*" ],
+                            "type": "KYCAgeCredential",
+                            "credentialSubject": {
+                              "documentType": {
+                                "$lt": 10
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    }
+                OffChain-SIG-V3-WITH-FROM-FIELD:
+                  value:
+                    {
+                      "from": "did:iden3:polygon:amoy:x6x5sor7zpyKA2dWUDvNRz7nzd6oCx5w43BNJbgaL",
+                      "scope": [
+                        {
+                          "circuitID": "credentialAtomicQueryV3-beta.1",
+                          "id": 1,
+                          "query": {
+                            "context": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld",
+                            "allowedIssuers": [ "*" ],
+                            "type": "KYCAgeCredential",
+                            "credentialSubject": {
+                              "birthday": {
+                                "$lt": 20201010
+                              }
+                            }
                           }
                         }
                       ]
@@ -628,6 +728,9 @@ components:
           type: string
           example: 'test flow'
         to:
+          type: string
+          example: null
+        from:
           type: string
           example: null
         scope:

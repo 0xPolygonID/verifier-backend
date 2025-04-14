@@ -1,60 +1,73 @@
-name: Deploy verifier backend to Production AWS Environment
+name: Deploy verifier backend to AWS Environment
 
 on:
   workflow_run:
     workflows: ["Checks"]
-    branches:  ["main"]
+    branches:  ["develop", "main"]
     types:
       - completed
 
 env:
-  AWS_ACCOUNT_ID: ${{ secrets.PROD_AWS_ACCOUNT_ID }}
   AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
-  ENVIRONMENT: production
   ECR_REPOSITORY: verifier_backend
 
   POLYGON_AMOY_CONTRACT_ADDRESS: "0x1a4cC30f2aA0377b0c3bc9848766D90cb4404124"
-  POLYGON_AMOY_SENDER_DID: "did:polygonid:polygon:amoy:2qV9QXdhXXmN5sKjN1YueMjxgRbnJcEGK2kGpvk3cq"
-  POLYGON_AMOY_NETWORK_FLAG: "0b0001_0011"
+  POLYGON_AMOY_SENDER_DID: "did:iden3:polygon:amoy:xCkXubP2T1zsUQpFLwczwfbWpdBYBxmJDtUTWAUCE"
   POLYGON_AMOY_CHAIN_ID: "80002"
 
   POLYGON_MAIN_CONTRACT_ADDRESS: "0x624ce98D2d27b20b8f8d521723Df8fC4db71D79D"
   POLYGON_MAIN_SENDER_DID: "did:polygonid:polygon:main:2q4Q7F7tM1xpwUTgWivb6TgKX3vWirsE3mqymuYjVv"
-  POLYGON_MAIN_NETWORK_FLAG: "0b0001_0001"
   POLYGON_MAIN_CHAIN_ID: "137"
 
-  CAMINO_COLUMBUS_CONTRACT_ADDRESS: "0x34eCe5eCe59B978C95147bBa6db8fb62F127e601"
-  CAMINO_COLUMBUS_NODE_URL: "https://columbus.camino.network/ext/bc/C/rpc"
-  CAMINO_COLUMBUS_SENDER_DID: "did:polygonid:camino:columbus:3E1DZ5qrNCJctmUS3nphEkfsvqYs1kL5oGTtEpYiov"
-  CAMINO_COLUMBUS_NETWORK_FLAG: "0b10000011"
-  CAMINO_COLUMBUS_CHAIN_ID: "501"
+  POLYGON_ZKEVM_MAIN_CONTRACT_ADDRESS: "0x3C9acB2205Aa72A05F6D77d708b5Cf85FCa3a896"
+  POLYGON_ZKEVM_MAIN_SENDER_DID: "did:iden3:polygon:zkevm:xJa94Ky3oeawnDdQVoTotncYnBA1fCLW6C4NZVpRu"
+  POLYGON_ZKEVM_MAIN_CHAIN_ID: "1101"
 
-  PRIVADO_MAIN_CONTRACT_ADDRESS: "0x975556428F077dB5877Ea2474D783D6C69233742"
+  POLYGON_ZKEVM_CARDONA_CONTRACT_ADDRESS: "0x3C9acB2205Aa72A05F6D77d708b5Cf85FCa3a896"
+  POLYGON_ZKEVM_CARDONA_SENDER_DID: "did:iden3:polygon:cardona:xWCCEr5ycUDRWQp3Zu6UJvyUuGsEUpwfenMQXixEj"
+  POLYGON_ZKEVM_CARDONA_CHAIN_ID: "2442"
+
+  PRIVADO_MAIN_CONTRACT_ADDRESS: "0x3C9acB2205Aa72A05F6D77d708b5Cf85FCa3a896"
   PRIVADO_MAIN_SENDER_DID: "did:iden3:privado:main:2SZz8Kvfb6CXGTiiqNiz8CTFTnySV7PKN7iVUvsNMH"
-  PRIVADO_MAIN_NETWORK_FLAG: "0b1010_0001"
   PRIVADO_MAIN_CHAIN_ID: "21000"
 
-  PRIVADO_TEST_CONTRACT_ADDRESS: "0x975556428F077dB5877Ea2474D783D6C69233742"
+  PRIVADO_TEST_CONTRACT_ADDRESS: "0x3C9acB2205Aa72A05F6D77d708b5Cf85FCa3a896"
   PRIVADO_TEST_SENDER_DID: "did:iden3:privado:test:2Sn9bnRFiTYNfbS1dVTaGCUXuMfnQMUcTCAXtFv4Gr"
-  PRIVADO_TEST_NETWORK_FLAG: "0b1010_0010"
   PRIVADO_TEST_CHAIN_ID: "21001"
 
-  LINEA_SEPOLIA_CONTRACT_ADDRESS: "0xD8869a439a07Edcc990F8f21E638702ee9273293"
+  LINEA_SEPOLIA_CONTRACT_ADDRESS: "0x3C9acB2205Aa72A05F6D77d708b5Cf85FCa3a896"
   LINEA_SEPOLIA_SENDER_DID: "did:iden3:linea:sepolia:28itzVLBHnMJV8sdjyffcAtWCx8HZ7btdKXxs7fJ6v"
-  LINEA_SEPOLIA_NETWORK_FLAG: "0b0100_1000"
-  LINEA_SEPOLIA_NODE_URL: "https://rpc.sepolia.linea.build"
   LINEA_SEPOLIA_CHAIN_ID: "59141"
   LINEA_SEPOLIA_METHOD: "iden3"
 
+  LINEA_MAIN_CONTRACT_ADDRESS: "0x3C9acB2205Aa72A05F6D77d708b5Cf85FCa3a896"
+  LINEA_MAIN_SENDER_DID: "did:iden3:linea:main:28vX3frJDbAvHLSMHEwxuxRk1GPpjBeUEsXdAwVxDm"
+  LINEA_MAIN_CHAIN_ID: "59144"
+  LINEA_MAIN_METHOD: "iden3"
+
+  ETHEREUM_SEPOLIA_CONTRACT_ADDRESS: "0x3C9acB2205Aa72A05F6D77d708b5Cf85FCa3a896"
+  ETHEREUM_SEPOLIA_SENDER_DID: "did:iden3:eth:sepolia:21Jtxn7kxuy27h7NzZFwk8x2YcepKyfRyX4Tt6tqYK"
+  ETHEREUM_SEPOLIA_NODE_URL: "https://rpc.sepolia.org"
+  ETHEREUM_SEPOLIA_CHAIN_ID: "11155111"
+  ETHEREUM_SEPOLIA_METHOD: "iden3"
+
+  ETHEREUM_MAIN_CONTRACT_ADDRESS: "0x3C9acB2205Aa72A05F6D77d708b5Cf85FCa3a896"
+  ETHEREUM_MAIN_SENDER_DID: "did:iden3:eth:main:zuerR5X7JKmAEj1iR4gRJfJgNTPtLQDePsspASZvf"
+  ETHEREUM_MAIN_NODE_URL: "https://eth-mainnet.g.alchemy.com/v2/demo"
+  ETHEREUM_MAIN_CHAIN_ID: "1"
+  ETHEREUM_MAIN_METHOD: "iden3"
+
 jobs:
   build-backend:
+    environment:
+      name: ${{ github.event.workflow_run.head_branch }}
+
     name: Build and push latest image to AWS
     permissions:
       id-token: write
       contents: write
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
-    environment: testing
 
     steps:
       - name: Checkout code
@@ -71,6 +84,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
+      - name: Print Environment
+        run: echo ${{ github.event.workflow_run.head_branch }}
 
       - name: Build file with supported networks
         run: |
@@ -79,47 +94,64 @@ jobs:
           echo -e "    contractAddress: ${{ env.POLYGON_AMOY_CONTRACT_ADDRESS }}" >> resolvers_settings.yaml
           echo -e "    networkURL: ${{ secrets.POLYGON_AMOY_NODE_URL }}" >> resolvers_settings.yaml
           echo -e "    chainID: ${{ env.POLYGON_AMOY_CHAIN_ID }}" >> resolvers_settings.yaml
-          echo -e "    networkFlag: ${{ env.POLYGON_AMOY_NETWORK_FLAG }}" >> resolvers_settings.yaml
           echo -e "    did: ${{ env.POLYGON_AMOY_SENDER_DID }}" >> resolvers_settings.yaml
           echo -e "  main:" >> resolvers_settings.yaml
           echo -e "    contractAddress: ${{ env.POLYGON_MAIN_CONTRACT_ADDRESS }}" >> resolvers_settings.yaml
           echo -e "    networkURL: ${{ secrets.POLYGON_MAINET_NODE_URL }}" >> resolvers_settings.yaml
           echo -e "    chainID: ${{ env.POLYGON_MAIN_CHAIN_ID }}" >> resolvers_settings.yaml
-          echo -e "    networkFlag: ${{ env.POLYGON_MAIN_NETWORK_FLAG }}" >> resolvers_settings.yaml
           echo -e "    did: ${{ env.POLYGON_MAIN_SENDER_DID }}" >> resolvers_settings.yaml
-          echo -e "camino:" >> resolvers_settings.yaml
-          echo -e "  columbus:" >> resolvers_settings.yaml
-          echo -e "    contractAddress: ${{ env.CAMINO_COLUMBUS_CONTRACT_ADDRESS }}" >> resolvers_settings.yaml
-          echo -e "    networkURL: ${{ env.CAMINO_COLUMBUS_NODE_URL }}" >> resolvers_settings.yaml
-          echo -e "    chainID: ${{ env.CAMINO_COLUMBUS_CHAIN_ID }}" >> resolvers_settings.yaml
-          echo -e "    networkFlag: ${{ env.CAMINO_COLUMBUS_NETWORK_FLAG }}" >> resolvers_settings.yaml
-          echo -e "    did: ${{ env.CAMINO_COLUMBUS_SENDER_DID }}" >> resolvers_settings.yaml
+          echo -e "  zkevm:" >> resolvers_settings.yaml
+          echo -e "    contractAddress: ${{ env.POLYGON_ZKEVM_MAIN_CONTRACT_ADDRESS }}" >> resolvers_settings.yaml
+          echo -e "    networkURL: ${{ secrets.POLYGON_ZKEVM_MAIN_NODE_URL }}" >> resolvers_settings.yaml
+          echo -e "    chainID: ${{ env.POLYGON_ZKEVM_MAIN_CHAIN_ID }}" >> resolvers_settings.yaml
+          echo -e "    did: ${{ env.POLYGON_ZKEVM_MAIN_SENDER_DID }}" >> resolvers_settings.yaml
+          echo -e "  cardona:" >> resolvers_settings.yaml
+          echo -e "    contractAddress: ${{ env.POLYGON_ZKEVM_CARDONA_CONTRACT_ADDRESS }}" >> resolvers_settings.yaml
+          echo -e "    networkURL: ${{ secrets.POLYGON_ZKEVM_CARDONA_NODE_URL }}" >> resolvers_settings.yaml
+          echo -e "    chainID: ${{ env.POLYGON_ZKEVM_CARDONA_CHAIN_ID }}" >> resolvers_settings.yaml
+          echo -e "    did: ${{ env.POLYGON_ZKEVM_CARDONA_SENDER_DID }}" >> resolvers_settings.yaml
           echo -e "linea:" >> resolvers_settings.yaml
           echo -e "  sepolia:" >> resolvers_settings.yaml
           echo -e "    contractAddress: ${{ env.LINEA_SEPOLIA_CONTRACT_ADDRESS }}" >> resolvers_settings.yaml
-          echo -e "    networkURL: ${{ env.LINEA_SEPOLIA_NODE_URL }}" >> resolvers_settings.yaml
+          echo -e "    networkURL: ${{ secrets.LINEA_SEPOLIA_NODE_URL }}" >> resolvers_settings.yaml
           echo -e "    chainID: ${{ env.LINEA_SEPOLIA_CHAIN_ID }}" >> resolvers_settings.yaml
-          echo -e "    networkFlag: ${{ env.LINEA_SEPOLIA_NETWORK_FLAG }}" >> resolvers_settings.yaml
           echo -e "    did: ${{ env.LINEA_SEPOLIA_SENDER_DID }}" >> resolvers_settings.yaml
           echo -e "    method: ${{ env.LINEA_SEPOLIA_METHOD }}" >> resolvers_settings.yaml
+          echo -e "  main:" >> resolvers_settings.yaml
+          echo -e "    contractAddress: ${{ env.LINEA_MAIN_CONTRACT_ADDRESS }}" >> resolvers_settings.yaml
+          echo -e "    networkURL: ${{ secrets.LINEA_MAIN_NODE_URL }}" >> resolvers_settings.yaml
+          echo -e "    chainID: ${{ env.LINEA_MAIN_CHAIN_ID }}" >> resolvers_settings.yaml
+          echo -e "    did: ${{ env.LINEA_MAIN_SENDER_DID }}" >> resolvers_settings.yaml
+          echo -e "    method: ${{ env.LINEA_MAIN_METHOD }}" >> resolvers_settings.yaml
           echo -e "privado:" >> resolvers_settings.yaml
           echo -e "  test:" >> resolvers_settings.yaml
           echo -e "    contractAddress: ${{ env.PRIVADO_TEST_CONTRACT_ADDRESS }}" >> resolvers_settings.yaml
           echo -e "    networkURL: ${{ secrets.PRIVADO_TEST_NODE_URL }}" >> resolvers_settings.yaml
           echo -e "    chainID: ${{ env.PRIVADO_TEST_CHAIN_ID }}" >> resolvers_settings.yaml
-          echo -e "    networkFlag: ${{ env.PRIVADO_TEST_NETWORK_FLAG }}" >> resolvers_settings.yaml
           echo -e "    did: ${{ env.PRIVADO_TEST_SENDER_DID }}" >> resolvers_settings.yaml
           echo -e "  main:" >> resolvers_settings.yaml
           echo -e "    contractAddress: ${{ env.PRIVADO_MAIN_CONTRACT_ADDRESS }}" >> resolvers_settings.yaml
           echo -e "    networkURL: ${{ secrets.PRIVADO_MAINET_NODE_URL }}" >> resolvers_settings.yaml
           echo -e "    chainID: ${{ env.PRIVADO_MAIN_CHAIN_ID }}" >> resolvers_settings.yaml
-          echo -e "    networkFlag: ${{ env.PRIVADO_MAIN_NETWORK_FLAG }}" >> resolvers_settings.yaml
-          echo -e "    did: ${{ env.PRIVADO_MAIN_SENDER_DID }}" >> resolvers_settings.yaml          
+          echo -e "    did: ${{ env.PRIVADO_MAIN_SENDER_DID }}" >> resolvers_settings.yaml
+          echo -e "ethereum:" >> resolvers_settings.yaml
+          echo -e "  sepolia:" >> resolvers_settings.yaml
+          echo -e "    contractAddress: ${{ env.ETHEREUM_SEPOLIA_CONTRACT_ADDRESS }}" >> resolvers_settings.yaml
+          echo -e "    networkURL: ${{ secrets.ETHEREUM_SEPOLIA_NODE_URL }}" >> resolvers_settings.yaml
+          echo -e "    chainID: ${{ env.ETHEREUM_SEPOLIA_CHAIN_ID }}" >> resolvers_settings.yaml
+          echo -e "    did: ${{ env.ETHEREUM_SEPOLIA_SENDER_DID }}" >> resolvers_settings.yaml
+          echo -e "  main:" >> resolvers_settings.yaml
+          echo -e "    contractAddress: ${{ env.ETHEREUM_MAIN_CONTRACT_ADDRESS }}" >> resolvers_settings.yaml
+          echo -e "    networkURL: ${{ secrets.ETHEREUM_MAIN_NODE_URL }}" >> resolvers_settings.yaml
+          echo -e "    chainID: ${{ env.ETHEREUM_MAIN_CHAIN_ID }}" >> resolvers_settings.yaml
+          echo -e "    did: ${{ env.ETHEREUM_MAIN_SENDER_DID }}" >> resolvers_settings.yaml
           cat resolvers_settings.yaml
       - run: make build/docker
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1-node16
+        env:
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID_NEW }}
         with:
           aws-region: ${{ env.AWS_DEFAULT_REGION }}
           role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/PolygonIDActionsRole
