@@ -344,7 +344,6 @@ func getInvokeContractQRCode(request protocol.ContractInvokeRequestMessage) QRCo
 }
 
 func validateOffChainRequest(request SignInRequestObject) error {
-
 	if request.Body.From == nil && request.Body.ChainID == nil {
 		return errors.New("field from is empty, chainId is empty. One of them must be defined for request")
 	}
@@ -543,7 +542,6 @@ func buildOnchainVerifierDID(transactionData protocol.TransactionData) (*w3c.DID
 }
 
 func getParams(params ScopeParams) (map[string]interface{}, error) {
-
 	// nullifierSessionId check
 	valOld, okOld := params["nullifierSessionID"]
 
@@ -570,14 +568,12 @@ func getParams(params ScopeParams) (map[string]interface{}, error) {
 }
 
 func (s *Server) getSenderDID(body SignInJSONRequestBody) (string, error) {
-
 	var senderDID string
 	if body.From != nil {
 
 		_, err := w3c.ParseDID(*body.From)
 		if err != nil {
 			return "", fmt.Errorf("field from must be a valid did, got %s", *body.From)
-
 		}
 		senderDID = *body.From
 	} else {
