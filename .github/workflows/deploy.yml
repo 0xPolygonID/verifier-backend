@@ -57,6 +57,13 @@ env:
   ETHEREUM_MAIN_CHAIN_ID: "1"
   ETHEREUM_MAIN_METHOD: "iden3"
 
+
+  BILLIONS_TEST_CONTRACT_ADDRESS: "0x3C9acB2205Aa72A05F6D77d708b5Cf85FCa3a896"
+  BILLIONS_TEST_SENDER_DID: "did:iden3:billions:test:2VxnoiNqdMPxUigcPf9LTfZdz7jSwQv8YscTjjH5zf"
+  BILLIONS_TEST_NODE_URL: "http://billions-testnet-rpc.eu-north-2.gateway.fm"
+  BILLIONS_TEST_CHAIN_ID: "6913"
+  BILLIONS_TEST_METHOD: "iden3"
+
 jobs:
   build-backend:
     environment:
@@ -145,6 +152,12 @@ jobs:
           echo -e "    networkURL: ${{ secrets.ETHEREUM_MAIN_NODE_URL }}" >> resolvers_settings.yaml
           echo -e "    chainID: ${{ env.ETHEREUM_MAIN_CHAIN_ID }}" >> resolvers_settings.yaml
           echo -e "    did: ${{ env.ETHEREUM_MAIN_SENDER_DID }}" >> resolvers_settings.yaml
+          echo -e "billions:" >> resolvers_settings.yaml
+          echo -e "  test:" >> resolvers_settings.yaml
+          echo -e "    contractAddress: ${{ env.BILLIONS_TEST_CONTRACT_ADDRESS }}" >> resolvers_settings.yaml
+          echo -e "    networkURL: ${{ env.BILLIONS_TEST_NODE_URL }}" >> resolvers_settings.yaml
+          echo -e "    chainID: ${{ env.BILLIONS_TEST_CHAIN_ID }}" >> resolvers_settings.yaml
+          echo -e "    did: ${{ env.BILLIONS_TEST_METHOD }}" >> resolvers_settings.yaml
           cat resolvers_settings.yaml
       - run: make build/docker
 
