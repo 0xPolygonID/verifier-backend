@@ -64,6 +64,12 @@ env:
   BILLIONS_TEST_CHAIN_ID: "6913"
   BILLIONS_TEST_METHOD: "iden3"
 
+  BILLIONS_MAIN_CONTRACT_ADDRESS: "0x3C9acB2205Aa72A05F6D77d708b5Cf85FCa3a896"
+  BILLIONS_MAIN_SENDER_DID: "did:iden3:billions:main:2VmAkXrihYaKzzVRkb3hoFRH3zdjibHXPK2Ahm3xBq"
+  BILLIONS_MAIN_NODE_URL: "https://rpc-mainnet.billions.network"
+  BILLIONS_MAIN_CHAIN_ID: "45056"
+  BILLIONS_MAIN_METHOD: "iden3"
+
 jobs:
   build-backend:
     environment:
@@ -158,6 +164,11 @@ jobs:
           echo -e "    networkURL: ${{ env.BILLIONS_TEST_NODE_URL }}" >> resolvers_settings.yaml
           echo -e "    chainID: ${{ env.BILLIONS_TEST_CHAIN_ID }}" >> resolvers_settings.yaml
           echo -e "    did: ${{ env.BILLIONS_TEST_METHOD }}" >> resolvers_settings.yaml
+          echo -e "  main:" >> resolvers_settings.yaml
+          echo -e "    contractAddress: ${{ env.BILLIONS_MAIN_CONTRACT_ADDRESS }}" >> resolvers_settings.yaml
+          echo -e "    networkURL: ${{ env.BILLIONS_MAIN_NODE_URL }}" >> resolvers_settings.yaml
+          echo -e "    chainID: ${{ env.BILLIONS_MAIN_CHAIN_ID }}" >> resolvers_settings.yaml
+          echo -e "    did: ${{ env.BILLIONS_MAIN_METHOD }}" >> resolvers_settings.yaml
           cat resolvers_settings.yaml
       - run: make build/docker
 
