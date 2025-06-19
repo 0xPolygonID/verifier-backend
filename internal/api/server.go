@@ -93,6 +93,18 @@ func (s *Server) Callback(ctx context.Context, request CallbackRequestObject) (C
 		return nil, fmt.Errorf("sessionID not found")
 	}
 
+	// Check if request is already verified
+	if _, ok := authRequest.(models.VerificationResponse); ok {
+		log.WithFields(log.Fields{
+			"sessionID": sessionID,
+		}).Error("request already verified")
+		return Callback500JSONResponse{
+			N500JSONResponse: N500JSONResponse{
+				Message: "request already verified",
+			},
+		}, nil
+	}
+
 	if _, ok := authRequest.(protocol.AuthorizationRequestMessage); !ok {
 		log.Error("failed to cast authRequest to AuthorizationRequestMessage")
 		return Callback500JSONResponse{
