@@ -105,7 +105,8 @@ func (s *Server) Callback(ctx context.Context, request CallbackRequestObject) (C
 		}, nil
 	}
 
-	if _, ok := authRequest.(protocol.AuthorizationRequestMessage); !ok {
+	authReqMsg, ok := authRequest.(protocol.AuthorizationRequestMessage)
+	if !ok {
 		log.Error("failed to cast authRequest to AuthorizationRequestMessage")
 		return Callback500JSONResponse{
 			N500JSONResponse: N500JSONResponse{
@@ -115,7 +116,7 @@ func (s *Server) Callback(ctx context.Context, request CallbackRequestObject) (C
 	}
 
 	authRespMsg, err := s.verifier.FullVerify(ctx, *request.Body,
-		authRequest.(protocol.AuthorizationRequestMessage),
+		authReqMsg,
 		pubsignals.WithAcceptedStateTransitionDelay(stateTransitionDelay))
 	if err != nil {
 		log.WithFields(log.Fields{
@@ -571,8 +572,13 @@ func getParams(params ScopeParams) (map[string]interface{}, error) {
 		valNullifierSessionID = valNew
 	}
 
+	valNullifierSessionIDStr, ok := valNullifierSessionID.(string)
+	if !ok {
+		return nil, errors.New("nullifierSessionID is not a string")
+	}
+
 	nullifierSessionID := new(big.Int)
-	if _, ok := nullifierSessionID.SetString(valNullifierSessionID.(string), defaultBigIntBase); !ok {
+	if _, ok := nullifierSessionID.SetString(valNullifierSessionIDStr, defaultBigIntBase); !ok {
 		return nil, errors.New("nullifierSessionID is not a valid big integer")
 	}
 
