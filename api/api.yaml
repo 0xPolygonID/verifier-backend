@@ -509,38 +509,9 @@ paths:
         '500':
           $ref: '#/components/responses/500'
 
-  /test:
-    post:
-      summary: Test JWZ Token
-      operationId: TestToken
-      tags:
-        - Internal
-      requestBody:
-        required: true
-        content:
-          text/plain:
-            schema:
-              type: string
-              example: jwz-token
-              description: JWZ token
-      responses:
-        '200':
-          description: Token processed successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TestResponse'
-        '400':
-          $ref: '#/components/responses/400'
-        '500':
-          $ref: '#/components/responses/500'
-
 components:
   schemas:
     CallbackResponse:
-      type: object
-
-    TestResponse:
       type: object
 
     QRStoreResponse:

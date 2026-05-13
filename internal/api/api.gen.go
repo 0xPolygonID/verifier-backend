@@ -121,9 +121,6 @@ type StatusResponse struct {
 	Status string `json:"status"`
 }
 
-// TestResponse defines model for TestResponse.
-type TestResponse = map[string]interface{}
-
 // TransactionData Only required when using on-chain verification
 type TransactionData struct {
 	ChainID         int    `json:"chainID"`
@@ -190,17 +187,11 @@ type StatusParams struct {
 	SessionID SessionID `form:"sessionID" json:"sessionID"`
 }
 
-// TestTokenTextBody defines parameters for TestToken.
-type TestTokenTextBody = string
-
 // CallbackTextRequestBody defines body for Callback for text/plain ContentType.
 type CallbackTextRequestBody = CallbackTextBody
 
 // SignInJSONRequestBody defines body for SignIn for application/json ContentType.
 type SignInJSONRequestBody = SignInRequest
-
-// TestTokenTextRequestBody defines body for TestToken for text/plain ContentType.
-type TestTokenTextRequestBody = TestTokenTextBody
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
@@ -222,9 +213,6 @@ type ServerInterface interface {
 	// Get Status
 	// (GET /status)
 	Status(w http.ResponseWriter, r *http.Request, params StatusParams)
-	// Test JWZ Token
-	// (POST /test)
-	TestToken(w http.ResponseWriter, r *http.Request)
 }
 
 // Unimplemented server implementation that returns http.StatusNotImplemented for each endpoint.
@@ -264,12 +252,6 @@ func (_ Unimplemented) SignIn(w http.ResponseWriter, r *http.Request) {
 // Get Status
 // (GET /status)
 func (_ Unimplemented) Status(w http.ResponseWriter, r *http.Request, params StatusParams) {
-	w.WriteHeader(http.StatusNotImplemented)
-}
-
-// Test JWZ Token
-// (POST /test)
-func (_ Unimplemented) TestToken(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -432,21 +414,6 @@ func (siw *ServerInterfaceWrapper) Status(w http.ResponseWriter, r *http.Request
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
-// TestToken operation middleware
-func (siw *ServerInterfaceWrapper) TestToken(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.TestToken(w, r)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r.WithContext(ctx))
-}
-
 type UnescapedCookieParamError struct {
 	ParamName string
 	Err       error
@@ -577,9 +544,6 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/status", wrapper.Status)
-	})
-	r.Group(func(r chi.Router) {
-		r.Post(options.BaseURL+"/test", wrapper.TestToken)
 	})
 
 	return r
@@ -772,41 +736,6 @@ func (response Status500JSONResponse) VisitStatusResponse(w http.ResponseWriter)
 	return json.NewEncoder(w).Encode(response)
 }
 
-type TestTokenRequestObject struct {
-	Body *TestTokenTextRequestBody
-}
-
-type TestTokenResponseObject interface {
-	VisitTestTokenResponse(w http.ResponseWriter) error
-}
-
-type TestToken200JSONResponse TestResponse
-
-func (response TestToken200JSONResponse) VisitTestTokenResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type TestToken400JSONResponse struct{ N400JSONResponse }
-
-func (response TestToken400JSONResponse) VisitTestTokenResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(400)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type TestToken500JSONResponse struct{ N500JSONResponse }
-
-func (response TestToken500JSONResponse) VisitTestTokenResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(500)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
 	// Get the documentation
@@ -827,9 +756,6 @@ type StrictServerInterface interface {
 	// Get Status
 	// (GET /status)
 	Status(ctx context.Context, request StatusRequestObject) (StatusResponseObject, error)
-	// Test JWZ Token
-	// (POST /test)
-	TestToken(ctx context.Context, request TestTokenRequestObject) (TestTokenResponseObject, error)
 }
 
 type StrictHandlerFunc = strictnethttp.StrictHttpHandlerFunc
@@ -1019,38 +945,6 @@ func (sh *strictHandler) Status(w http.ResponseWriter, r *http.Request, params S
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
 	} else if validResponse, ok := response.(StatusResponseObject); ok {
 		if err := validResponse.VisitStatusResponse(w); err != nil {
-			sh.options.ResponseErrorHandlerFunc(w, r, err)
-		}
-	} else if response != nil {
-		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// TestToken operation middleware
-func (sh *strictHandler) TestToken(w http.ResponseWriter, r *http.Request) {
-	var request TestTokenRequestObject
-
-	data, err := io.ReadAll(r.Body)
-	if err != nil {
-		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't read body: %w", err))
-		return
-	}
-	body := TestTokenTextRequestBody(data)
-	request.Body = &body
-
-	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.TestToken(ctx, request.(TestTokenRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "TestToken")
-	}
-
-	response, err := handler(r.Context(), w, r, request)
-
-	if err != nil {
-		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(TestTokenResponseObject); ok {
-		if err := validResponse.VisitTestTokenResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {
