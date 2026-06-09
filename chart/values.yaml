@@ -1,0 +1,32 @@
+hostnames: []
+
+image:
+  repository: 654654630007.dkr.ecr.eu-west-1.amazonaws.com/verifier_backend
+  tag: latest
+  pullPolicy: IfNotPresent
+
+replicaCount: 1
+
+imagePullSecrets: []
+
+service:
+  type: ClusterIP
+  port: 3010
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 250m
+    memory: 256Mi
+
+# Non-sensitive configuration — stored in ConfigMap
+env:
+  VERIFIER_BACKEND_HOST: ""
+  VERIFIER_BACKEND_PORT: "3010"
+  VERIFIER_BACKEND_KEY_DIR: "./keys"
+  VERIFIER_IPFS_URL: "https://gateway.pinata.cloud"
+  VERIFIER_BACKEND_RESOLVER_SETTINGS_PATH: "./resolvers_settings.yaml"
+  VERIFIER_BACKEND_CACHE_EXPIRATION: "48h"
+  ENVIRONMENT: ""

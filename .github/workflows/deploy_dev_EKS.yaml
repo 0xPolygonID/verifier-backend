@@ -1,0 +1,295 @@
+name: Deploy to DEV EKS
+
+on:
+  workflow_run:
+    workflows: ["Checks"]
+    branches: ["develop"]
+    types:
+      - completed
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  ECR_REPO: 654654630007.dkr.ecr.eu-west-1.amazonaws.com/verifier_backend
+  AWS_ROLE: arn:aws:iam::654654630007:role/VerifierBackendEksDeployRole
+  AWS_REGION: eu-west-1
+
+  POLYGON_AMOY_CONTRACT_ADDRESS: "0x1a4cC30f2aA0377b0c3bc9848766D90cb4404124"
+  POLYGON_AMOY_SENDER_DID: "did:iden3:polygon:amoy:xCkXubP2T1zsUQpFLwczwfbWpdBYBxmJDtUTWAUCE"
+  POLYGON_AMOY_CHAIN_ID: "80002"
+
+  POLYGON_MAIN_CONTRACT_ADDRESS: "0x624ce98D2d27b20b8f8d521723Df8fC4db71D79D"
+  POLYGON_MAIN_SENDER_DID: "did:polygonid:polygon:main:2q4Q7F7tM1xpwUTgWivb6TgKX3vWirsE3mqymuYjVv"
+  POLYGON_MAIN_CHAIN_ID: "137"
+
+  POLYGON_ZKEVM_MAIN_CONTRACT_ADDRESS: "0x3C9acB2205Aa72A05F6D77d708b5Cf85FCa3a896"
+  POLYGON_ZKEVM_MAIN_SENDER_DID: "did:iden3:polygon:zkevm:xJa94Ky3oeawnDdQVoTotncYnBA1fCLW6C4NZVpRu"
+  POLYGON_ZKEVM_MAIN_CHAIN_ID: "1101"
+
+  POLYGON_ZKEVM_CARDONA_CONTRACT_ADDRESS: "0x3C9acB2205Aa72A05F6D77d708b5Cf85FCa3a896"
+  POLYGON_ZKEVM_CARDONA_SENDER_DID: "did:iden3:polygon:cardona:xWCCEr5ycUDRWQp3Zu6UJvyUuGsEUpwfenMQXixEj"
+  POLYGON_ZKEVM_CARDONA_CHAIN_ID: "2442"
+
+  PRIVADO_MAIN_CONTRACT_ADDRESS: "0x3C9acB2205Aa72A05F6D77d708b5Cf85FCa3a896"
+  PRIVADO_MAIN_SENDER_DID: "did:iden3:privado:main:2SZz8Kvfb6CXGTiiqNiz8CTFTnySV7PKN7iVUvsNMH"
+  PRIVADO_MAIN_CHAIN_ID: "21000"
+
+  PRIVADO_TEST_CONTRACT_ADDRESS: "0x3C9acB2205Aa72A05F6D77d708b5Cf85FCa3a896"
+  PRIVADO_TEST_SENDER_DID: "did:iden3:privado:test:2Sn9bnRFiTYNfbS1dVTaGCUXuMfnQMUcTCAXtFv4Gr"
+  PRIVADO_TEST_CHAIN_ID: "21001"
+
+  LINEA_SEPOLIA_CONTRACT_ADDRESS: "0x3C9acB2205Aa72A05F6D77d708b5Cf85FCa3a896"
+  LINEA_SEPOLIA_SENDER_DID: "did:iden3:linea:sepolia:28itzVLBHnMJV8sdjyffcAtWCx8HZ7btdKXxs7fJ6v"
+  LINEA_SEPOLIA_CHAIN_ID: "59141"
+  LINEA_SEPOLIA_METHOD: "iden3"
+
+  LINEA_MAIN_CONTRACT_ADDRESS: "0x3C9acB2205Aa72A05F6D77d708b5Cf85FCa3a896"
+  LINEA_MAIN_SENDER_DID: "did:iden3:linea:main:28vX3frJDbAvHLSMHEwxuxRk1GPpjBeUEsXdAwVxDm"
+  LINEA_MAIN_CHAIN_ID: "59144"
+  LINEA_MAIN_METHOD: "iden3"
+
+  ETHEREUM_SEPOLIA_CONTRACT_ADDRESS: "0x3C9acB2205Aa72A05F6D77d708b5Cf85FCa3a896"
+  ETHEREUM_SEPOLIA_SENDER_DID: "did:iden3:eth:sepolia:21Jtxn7kxuy27h7NzZFwk8x2YcepKyfRyX4Tt6tqYK"
+  ETHEREUM_SEPOLIA_CHAIN_ID: "11155111"
+  ETHEREUM_SEPOLIA_METHOD: "iden3"
+
+  ETHEREUM_MAIN_CONTRACT_ADDRESS: "0x3C9acB2205Aa72A05F6D77d708b5Cf85FCa3a896"
+  ETHEREUM_MAIN_SENDER_DID: "did:iden3:eth:main:zuerR5X7JKmAEj1iR4gRJfJgNTPtLQDePsspASZvf"
+  ETHEREUM_MAIN_CHAIN_ID: "1"
+  ETHEREUM_MAIN_METHOD: "iden3"
+
+  BILLIONS_TEST_CONTRACT_ADDRESS: "0x3C9acB2205Aa72A05F6D77d708b5Cf85FCa3a896"
+  BILLIONS_TEST_SENDER_DID: "did:iden3:billions:test:2VxnoiNqdMPxUigcPf9LTfZdz7jSwQv8YscTjjH5zf"
+  BILLIONS_TEST_NODE_URL: "http://billions-testnet-rpc.eu-north-2.gateway.fm"
+  BILLIONS_TEST_CHAIN_ID: "6913"
+  BILLIONS_TEST_METHOD: "iden3"
+
+  BILLIONS_MAIN_CONTRACT_ADDRESS: "0x3C9acB2205Aa72A05F6D77d708b5Cf85FCa3a896"
+  BILLIONS_MAIN_SENDER_DID: "did:iden3:billions:main:2VmAkXrihYaKzzVRkb3hoFRH3zdjibHXPK2Ahm3xBq"
+  BILLIONS_MAIN_NODE_URL: "https://rpc-mainnet.billions.network"
+  BILLIONS_MAIN_CHAIN_ID: "45056"
+  BILLIONS_MAIN_METHOD: "iden3"
+
+jobs:
+  check-image:
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    environment: develop
+    outputs:
+      sha: ${{ steps.sha.outputs.value }}
+      exists: ${{ steps.check.outputs.exists }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+
+      - name: Set SHA
+        id: sha
+        run: echo "value=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.AWS_ROLE }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Check ECR
+        id: check
+        run: |
+          set +e
+          output=$(aws ecr describe-images \
+            --repository-name verifier_backend \
+            --image-ids imageTag="${{ steps.sha.outputs.value }}" 2>&1)
+          status=$?
+          set -e
+          if [ $status -eq 0 ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          elif echo "$output" | grep -q "ImageNotFoundException"; then
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::ECR check failed: $output"; exit 1
+          fi
+
+  build:
+    needs: check-image
+    if: needs.check-image.outputs.exists != 'true'
+    environment: develop
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: linux/amd64
+            runner: ubuntu-latest
+          - platform: linux/arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Build file with supported networks
+        run: |
+          echo -e "polygon:" > resolvers_settings.yaml
+          echo -e "  amoy:" >> resolvers_settings.yaml
+          echo -e "    contractAddress: ${{ env.POLYGON_AMOY_CONTRACT_ADDRESS }}" >> resolvers_settings.yaml
+          echo -e "    networkURL: ${{ secrets.POLYGON_AMOY_NODE_URL }}" >> resolvers_settings.yaml
+          echo -e "    chainID: ${{ env.POLYGON_AMOY_CHAIN_ID }}" >> resolvers_settings.yaml
+          echo -e "    did: ${{ env.POLYGON_AMOY_SENDER_DID }}" >> resolvers_settings.yaml
+          echo -e "  main:" >> resolvers_settings.yaml
+          echo -e "    contractAddress: ${{ env.POLYGON_MAIN_CONTRACT_ADDRESS }}" >> resolvers_settings.yaml
+          echo -e "    networkURL: ${{ secrets.POLYGON_MAINET_NODE_URL }}" >> resolvers_settings.yaml
+          echo -e "    chainID: ${{ env.POLYGON_MAIN_CHAIN_ID }}" >> resolvers_settings.yaml
+          echo -e "    did: ${{ env.POLYGON_MAIN_SENDER_DID }}" >> resolvers_settings.yaml
+          echo -e "  zkevm:" >> resolvers_settings.yaml
+          echo -e "    contractAddress: ${{ env.POLYGON_ZKEVM_MAIN_CONTRACT_ADDRESS }}" >> resolvers_settings.yaml
+          echo -e "    networkURL: ${{ secrets.POLYGON_ZKEVM_MAIN_NODE_URL }}" >> resolvers_settings.yaml
+          echo -e "    chainID: ${{ env.POLYGON_ZKEVM_MAIN_CHAIN_ID }}" >> resolvers_settings.yaml
+          echo -e "    did: ${{ env.POLYGON_ZKEVM_MAIN_SENDER_DID }}" >> resolvers_settings.yaml
+          echo -e "  cardona:" >> resolvers_settings.yaml
+          echo -e "    contractAddress: ${{ env.POLYGON_ZKEVM_CARDONA_CONTRACT_ADDRESS }}" >> resolvers_settings.yaml
+          echo -e "    networkURL: ${{ secrets.POLYGON_ZKEVM_CARDONA_NODE_URL }}" >> resolvers_settings.yaml
+          echo -e "    chainID: ${{ env.POLYGON_ZKEVM_CARDONA_CHAIN_ID }}" >> resolvers_settings.yaml
+          echo -e "    did: ${{ env.POLYGON_ZKEVM_CARDONA_SENDER_DID }}" >> resolvers_settings.yaml
+          echo -e "linea:" >> resolvers_settings.yaml
+          echo -e "  sepolia:" >> resolvers_settings.yaml
+          echo -e "    contractAddress: ${{ env.LINEA_SEPOLIA_CONTRACT_ADDRESS }}" >> resolvers_settings.yaml
+          echo -e "    networkURL: ${{ secrets.LINEA_SEPOLIA_NODE_URL }}" >> resolvers_settings.yaml
+          echo -e "    chainID: ${{ env.LINEA_SEPOLIA_CHAIN_ID }}" >> resolvers_settings.yaml
+          echo -e "    did: ${{ env.LINEA_SEPOLIA_SENDER_DID }}" >> resolvers_settings.yaml
+          echo -e "    method: ${{ env.LINEA_SEPOLIA_METHOD }}" >> resolvers_settings.yaml
+          echo -e "  main:" >> resolvers_settings.yaml
+          echo -e "    contractAddress: ${{ env.LINEA_MAIN_CONTRACT_ADDRESS }}" >> resolvers_settings.yaml
+          echo -e "    networkURL: ${{ secrets.LINEA_MAIN_NODE_URL }}" >> resolvers_settings.yaml
+          echo -e "    chainID: ${{ env.LINEA_MAIN_CHAIN_ID }}" >> resolvers_settings.yaml
+          echo -e "    did: ${{ env.LINEA_MAIN_SENDER_DID }}" >> resolvers_settings.yaml
+          echo -e "    method: ${{ env.LINEA_MAIN_METHOD }}" >> resolvers_settings.yaml
+          echo -e "privado:" >> resolvers_settings.yaml
+          echo -e "  test:" >> resolvers_settings.yaml
+          echo -e "    contractAddress: ${{ env.PRIVADO_TEST_CONTRACT_ADDRESS }}" >> resolvers_settings.yaml
+          echo -e "    networkURL: ${{ secrets.PRIVADO_TEST_NODE_URL }}" >> resolvers_settings.yaml
+          echo -e "    chainID: ${{ env.PRIVADO_TEST_CHAIN_ID }}" >> resolvers_settings.yaml
+          echo -e "    did: ${{ env.PRIVADO_TEST_SENDER_DID }}" >> resolvers_settings.yaml
+          echo -e "  main:" >> resolvers_settings.yaml
+          echo -e "    contractAddress: ${{ env.PRIVADO_MAIN_CONTRACT_ADDRESS }}" >> resolvers_settings.yaml
+          echo -e "    networkURL: ${{ secrets.PRIVADO_MAINET_NODE_URL }}" >> resolvers_settings.yaml
+          echo -e "    chainID: ${{ env.PRIVADO_MAIN_CHAIN_ID }}" >> resolvers_settings.yaml
+          echo -e "    did: ${{ env.PRIVADO_MAIN_SENDER_DID }}" >> resolvers_settings.yaml
+          echo -e "ethereum:" >> resolvers_settings.yaml
+          echo -e "  sepolia:" >> resolvers_settings.yaml
+          echo -e "    contractAddress: ${{ env.ETHEREUM_SEPOLIA_CONTRACT_ADDRESS }}" >> resolvers_settings.yaml
+          echo -e "    networkURL: ${{ secrets.ETHEREUM_SEPOLIA_NODE_URL }}" >> resolvers_settings.yaml
+          echo -e "    chainID: ${{ env.ETHEREUM_SEPOLIA_CHAIN_ID }}" >> resolvers_settings.yaml
+          echo -e "    did: ${{ env.ETHEREUM_SEPOLIA_SENDER_DID }}" >> resolvers_settings.yaml
+          echo -e "    method: ${{ env.ETHEREUM_SEPOLIA_METHOD }}" >> resolvers_settings.yaml
+          echo -e "  main:" >> resolvers_settings.yaml
+          echo -e "    contractAddress: ${{ env.ETHEREUM_MAIN_CONTRACT_ADDRESS }}" >> resolvers_settings.yaml
+          echo -e "    networkURL: ${{ secrets.ETHEREUM_MAIN_NODE_URL }}" >> resolvers_settings.yaml
+          echo -e "    chainID: ${{ env.ETHEREUM_MAIN_CHAIN_ID }}" >> resolvers_settings.yaml
+          echo -e "    did: ${{ env.ETHEREUM_MAIN_SENDER_DID }}" >> resolvers_settings.yaml
+          echo -e "    method: ${{ env.ETHEREUM_MAIN_METHOD }}" >> resolvers_settings.yaml
+          echo -e "billions:" >> resolvers_settings.yaml
+          echo -e "  test:" >> resolvers_settings.yaml
+          echo -e "    contractAddress: ${{ env.BILLIONS_TEST_CONTRACT_ADDRESS }}" >> resolvers_settings.yaml
+          echo -e "    networkURL: ${{ env.BILLIONS_TEST_NODE_URL }}" >> resolvers_settings.yaml
+          echo -e "    chainID: ${{ env.BILLIONS_TEST_CHAIN_ID }}" >> resolvers_settings.yaml
+          echo -e "    did: ${{ env.BILLIONS_TEST_SENDER_DID }}" >> resolvers_settings.yaml
+          echo -e "    method: ${{ env.BILLIONS_TEST_METHOD }}" >> resolvers_settings.yaml
+          echo -e "  main:" >> resolvers_settings.yaml
+          echo -e "    contractAddress: ${{ env.BILLIONS_MAIN_CONTRACT_ADDRESS }}" >> resolvers_settings.yaml
+          echo -e "    networkURL: ${{ env.BILLIONS_MAIN_NODE_URL }}" >> resolvers_settings.yaml
+          echo -e "    chainID: ${{ env.BILLIONS_MAIN_CHAIN_ID }}" >> resolvers_settings.yaml
+          echo -e "    did: ${{ env.BILLIONS_MAIN_SENDER_DID }}" >> resolvers_settings.yaml
+          echo -e "    method: ${{ env.BILLIONS_MAIN_METHOD }}" >> resolvers_settings.yaml
+          cat resolvers_settings.yaml
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.AWS_ROLE }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push
+        run: |
+          SUFFIX=$(echo "${{ matrix.platform }}" | sed 's|linux/||')
+          docker buildx build \
+            --platform ${{ matrix.platform }} \
+            -t "$ECR_REPO:${{ needs.check-image.outputs.sha }}-$SUFFIX" \
+            --push .
+
+  merge:
+    needs: [check-image, build]
+    if: needs.check-image.outputs.exists != 'true'
+    runs-on: ubuntu-latest
+    environment: develop
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.AWS_ROLE }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Create multi-arch manifest
+        run: |
+          SHA=${{ needs.check-image.outputs.sha }}
+          docker buildx imagetools create \
+            -t "$ECR_REPO:$SHA" \
+            "$ECR_REPO:$SHA-amd64" \
+            "$ECR_REPO:$SHA-arm64"
+
+  deploy:
+    needs: [check-image, build, merge]
+    if: |
+      always() &&
+      needs.check-image.result == 'success' &&
+      (needs.build.result == 'success' || needs.build.result == 'skipped') &&
+      (needs.merge.result == 'success' || needs.merge.result == 'skipped')
+    runs-on: ubuntu-latest
+    environment: develop
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.AWS_ROLE }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Update kubeconfig
+        run: aws eks update-kubeconfig --name eks-dev --region ${{ env.AWS_REGION }}
+
+      - name: Set chart version
+        run: |
+          SHA=${{ needs.check-image.outputs.sha }}
+          VERSION="$(date -u +%Y%m%d%H%M)-$SHA"
+          sed -i "s/^version:.*/version: $VERSION/" chart/Chart.yaml
+          sed -i "s/^appVersion:.*/appVersion: \"$VERSION\"/" chart/Chart.yaml
+
+      - name: Helm upgrade
+        env:
+          SHA: ${{ needs.check-image.outputs.sha }}
+        run: |
+          helm upgrade --install verifier-backend ./chart \
+            -f chart/values-dev.yaml \
+            -n billions \
+            --set image.tag="$SHA" \
+            --wait --timeout 5m
