@@ -13,7 +13,7 @@ permissions:
 
 env:
   ECR_REPO: 654654630007.dkr.ecr.eu-west-1.amazonaws.com/verifier_backend
-  AWS_ROLE: arn:aws:iam::654654630007:role/IdentityDashboardEksDeployRole
+  AWS_ROLE: arn:aws:iam::654654630007:role/VerifierBackendEksDeployRole
   AWS_REGION: eu-west-1
 
   POLYGON_AMOY_CONTRACT_ADDRESS: "0x1a4cC30f2aA0377b0c3bc9848766D90cb4404124"
