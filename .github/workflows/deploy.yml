@@ -3,7 +3,7 @@ name: Deploy verifier backend to AWS Environment
 on:
   workflow_run:
     workflows: ["Checks"]
-    branches:  ["develop", "main"]
+    branches:  ["main"]
     types:
       - completed
 
