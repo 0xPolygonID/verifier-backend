@@ -1,0 +1,6 @@
+
+apiVersion: v2
+name: verifier-backend
+description: Verifier Backend for Privado ID.
+version: 1.0.0
+appVersion: "1.0.0"
