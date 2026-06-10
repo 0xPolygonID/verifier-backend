@@ -1,5 +1,6 @@
 hostnames:
   - "verifier-backend-k8s-dev.internal-iden3-dev.com"
+  - "verifier-backend-dev.privado.id"
 
 image:
   repository: 654654630007.dkr.ecr.eu-west-1.amazonaws.com/verifier_backend
