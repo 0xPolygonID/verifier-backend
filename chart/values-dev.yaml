@@ -10,7 +10,7 @@ image:
 replicaCount: 1
 
 env:
-  VERIFIER_BACKEND_HOST: "https://verifier-backend-k8s-dev.internal-iden3-dev.com"
+  VERIFIER_BACKEND_HOST: "https://verifier-backend-dev.privado.id"
   VERIFIER_BACKEND_PORT: "3010"
   VERIFIER_BACKEND_KEY_DIR: "./keys"
   VERIFIER_IPFS_URL: "https://gateway.pinata.cloud"
