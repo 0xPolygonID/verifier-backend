@@ -1,12 +1,55 @@
 package loader
 
 import (
+	"errors"
+	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 
+	"github.com/iden3/go-circuits/v2"
+	authloaders "github.com/iden3/go-iden3-auth/v2/loaders"
 	"github.com/iden3/go-schema-processor/v2/loaders"
 	shell "github.com/ipfs/go-ipfs-api"
 	"github.com/piprate/json-gold/ld"
 )
+
+// LocalKeyLoader reads verification keys from a directory tree:
+// {baseDir}/{circuitID}/verification_key.json
+// Falls back to embedded keys via ErrKeyNotFound when the file is absent.
+type LocalKeyLoader struct {
+	baseDir string
+}
+
+// NewLocalKeyLoader creates a LocalKeyLoader rooted at baseDir.
+func NewLocalKeyLoader(baseDir string) *LocalKeyLoader {
+	return &LocalKeyLoader{baseDir: baseDir}
+}
+
+// Load implements loaders.VerificationKeyLoader.
+// It tries two layouts under baseDir, in order:
+//  1. {baseDir}/{circuitID}/verification_key.json  (e.g. authV3/)
+//  2. {baseDir}/{circuitID}.json                   (e.g. credentialAtomicQueryMTPV2.json)
+//
+// Returns ErrKeyNotFound when neither exists, letting EmbeddedKeyLoader fall back.
+func (l *LocalKeyLoader) Load(id circuits.CircuitID) ([]byte, error) {
+	subDir := filepath.Join(l.baseDir, string(id), "verification_key.json")
+	if data, err := os.ReadFile(subDir); err == nil {
+		return data, nil
+	} else if !errors.Is(err, os.ErrNotExist) {
+		return nil, fmt.Errorf("reading verification key for circuit %v: %w", id, err)
+	}
+
+	flat := filepath.Join(l.baseDir, string(id)+".json")
+	data, err := os.ReadFile(flat)
+	if errors.Is(err, os.ErrNotExist) {
+		return nil, authloaders.ErrKeyNotFound
+	}
+	if err != nil {
+		return nil, fmt.Errorf("reading verification key for circuit %v: %w", id, err)
+	}
+	return data, nil
+}
 
 // W3CDocumentLoader is a document loader that loads w3c context
 type W3CDocumentLoader struct {

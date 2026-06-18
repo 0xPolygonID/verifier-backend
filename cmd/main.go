@@ -40,14 +40,15 @@ func main() {
 		chiMiddleware.NoCache,
 	)
 
-	keysLoader := &loaders.FSKeyLoader{Dir: cfg.KeyDIR}
+	keysLoader := loaders.NewEmbeddedKeyLoader(
+		loaders.WithKeyLoader(loader.NewLocalKeyLoader(cfg.KeyDIR)),
+	)
 	w3cLoader := loader.NewW3CDocumentLoader(nil, cfg.IPFSURL)
 	resolvers, senderDIDs, err := parseResolverSettings(ctx, cfg.ResolverSettings)
 	if err != nil {
 		log.WithField("error", err).Error("cannot parse resolver settings")
 		return
 	}
-
 	verifier, err := auth.NewVerifier(keysLoader, resolvers, auth.WithDocumentLoader(w3cLoader))
 	if err != nil {
 		log.WithFields(log.Fields{"err": err}).Error("failed to create verifier")
@@ -78,7 +79,7 @@ func main() {
 }
 
 // parseResolverSettings parses the resolver settings from the config file
-func parseResolverSettings(ctx context.Context, rs config.ResolverSettings) (map[string]pubsignals.StateResolver, map[string]string, error) {
+func parseResolverSettings(_ context.Context, rs config.ResolverSettings) (map[string]pubsignals.StateResolver, map[string]string, error) {
 	var (
 		resolvers     = make(map[string]pubsignals.StateResolver)
 		verifiersDIDs = make(map[string]string)
@@ -89,33 +90,9 @@ func parseResolverSettings(ctx context.Context, rs config.ResolverSettings) (map
 			prefix := fmt.Sprintf("%s:%s", chainName, networkName)
 			resolver := state.NewETHResolver(networkSettings.NetworkURL, networkSettings.ContractAddress)
 			resolvers[prefix] = resolver
-
-			//if err := registerCustomDIDMethod(ctx, chainName, networkName, networkSettings); err != nil {
-			//	log.Error(ctx, "cannot register custom DID method", "err", err)
-			//	return nil, nil, err
-			//}
-
 			verifiersDIDs[networkSettings.ChainID] = networkSettings.DID
 		}
 	}
 
 	return resolvers, verifiersDIDs, nil
 }
-
-//func registerCustomDIDMethod(ctx context.Context, blockchain string, network string, resolverAttrs config.ResolverSettingsAttrs) error {
-//	chainID, err := strconv.Atoi(resolverAttrs.ChainID)
-//	if err != nil {
-//		return fmt.Errorf("cannot convert chainID to int: %w", err)
-//	}
-//	params := core.DIDMethodNetworkParams{
-//		Method:      core.DIDMethod(resolverAttrs.Method),
-//		Blockchain:  core.Blockchain(blockchain),
-//		Network:     core.NetworkID(network),
-//		NetworkFlag: resolverAttrs.NetworkFlag,
-//	}
-//	if err := core.RegisterDIDMethodNetwork(params, core.WithChainID(chainID)); err != nil {
-//		log.Error(ctx, "cannot register custom DID method", "err", err, "customDID", chainID)
-//		return err
-//	}
-//	return nil
-//}
